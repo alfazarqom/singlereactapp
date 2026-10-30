@@ -1292,36 +1292,6 @@ const ProfileGuestPage = () => {
   );
 };
 
-const ProfilePage = () => {
-  const { navigateTo } = useApp();
-
-  return (
-    <div className="max-w-md mx-auto space-y-6 pb-12">
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center space-y-3">
-        <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto flex items-center justify-center font-bold text-xl text-slate-700 dark:text-slate-200">
-          AJ
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Alex Johnson</h2>
-          <p className="text-xs text-slate-400">alex.j@example.com</p>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold">
-        <button onClick={() => navigateTo("orders")} className="w-full p-4 text-left flex items-center justify-between">
-          <span>My Orders</span> <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-        <button onClick={() => navigateTo("wishlist")} className="w-full p-4 text-left flex items-center justify-between">
-          <span>Saved Wishlist</span> <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-        <button onClick={() => navigateTo("notifications")} className="w-full p-4 text-left flex items-center justify-between">
-          <span>Notifications</span> <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const NotificationsPage = () => {
   const { notifications } = useApp();
 
@@ -1385,7 +1355,6 @@ const MainContent = () => {
     case "search":
       return <ProductListingPage />;
     case "profile":
-      return <ProfilePage />;
     case "profile-guest":
       return <ProfileGuestPage />;
     case "product-detail":
