@@ -1314,26 +1314,44 @@ const NotificationsPage = () => {
 // ==========================================
 
 const StandalonePage = () => {
-  const { currentPage } = useApp();
+  const { currentPage, isLoading } = useApp();
 
+  if (isLoading) return null;
+
+  let page = null;
   switch (currentPage) {
     case "product-detail":
-      return <ProductDetailPage />;
+      page = <ProductDetailPage />;
+      break;
     case "checkout":
-      return <CheckoutPage />;
+      page = <CheckoutPage />;
+      break;
     case "order-success":
-      return <OrderSuccessPage />;
+      page = <OrderSuccessPage />;
+      break;
     case "wishlist":
-      return <WishlistPage />;
+      page = <WishlistPage />;
+      break;
     case "cart":
-      return <CartPage />;
+      page = <CartPage />;
+      break;
     case "orders":
-      return <OrdersPage />;
+      page = <OrdersPage />;
+      break;
     case "notifications":
-      return <NotificationsPage />;
+      page = <NotificationsPage />;
+      break;
     default:
       return null;
   }
+
+  if (!page) return null;
+
+  return (
+    <main id="main-content-area" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+      {page}
+    </main>
+  );
 };
 
 // ==========================================
@@ -1343,7 +1361,13 @@ const StandalonePage = () => {
 const MainContent = () => {
   const { currentPage, isLoading } = useApp();
 
-  if (isLoading) return <ProductGridSkeleton count={8} />;
+  if (isLoading) {
+    return (
+      <main id="main-content-area" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <ProductGridSkeleton count={8} />
+      </main>
+    );
+  }
 
   switch (currentPage) {
     case "home":
@@ -1362,7 +1386,7 @@ const MainContent = () => {
     case "cart":
     case "orders":
     case "notifications":
-      return <StandalonePage />;
+      return null;
     default:
       return <HomePage />;
   }
@@ -1378,12 +1402,8 @@ const AppShell = () => {
   return (
     <div className="h-[100dvh] w-full flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <Header />
-
-      {/* Main Independent Scrollable Area */}
-      <main id="main-content-area" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-        <MainContent />
-      </main>
-
+      <MainContent />
+      <StandalonePage />
       <BottomNavigation />
 
       {/* Global Toast */}
