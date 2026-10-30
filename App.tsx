@@ -1262,6 +1262,36 @@ const OrdersPage = () => {
 };
 
 // --- I. PROFILE & NOTIFICATIONS PAGES ---
+const ProfileGuestPage = () => {
+  const { navigateTo } = useApp();
+
+  return (
+    <div className="max-w-md mx-auto space-y-6 pb-12">
+      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center space-y-3">
+        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full mx-auto flex items-center justify-center">
+          <User className="w-9 h-9 text-slate-400" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Guest Profile</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">You are currently browsing as a guest.</p>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold">
+        <button onClick={() => navigateTo("orders")} className="w-full p-4 text-left flex items-center justify-between">
+          <span>My Orders</span> <ChevronRight className="w-4 h-4 text-slate-400" />
+        </button>
+        <button onClick={() => navigateTo("wishlist")} className="w-full p-4 text-left flex items-center justify-between">
+          <span>Saved Wishlist</span> <ChevronRight className="w-4 h-4 text-slate-400" />
+        </button>
+        <button onClick={() => navigateTo("notifications")} className="w-full p-4 text-left flex items-center justify-between">
+          <span>Notifications</span> <ChevronRight className="w-4 h-4 text-slate-400" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const ProfilePage = () => {
   const { navigateTo } = useApp();
 
@@ -1339,36 +1369,44 @@ const StandalonePage = () => {
 };
 
 // ==========================================
+// MAIN CONTENT CONTROLLER
+// ==========================================
+
+const MainContent = () => {
+  const { currentPage, isLoading } = useApp();
+
+  if (isLoading) return <ProductGridSkeleton count={8} />;
+
+  switch (currentPage) {
+    case "home":
+      return <HomePage />;
+    case "category":
+    case "products":
+    case "search":
+      return <ProductListingPage />;
+    case "profile":
+      return <ProfilePage />;
+    case "profile-guest":
+      return <ProfileGuestPage />;
+    case "product-detail":
+    case "checkout":
+    case "order-success":
+    case "wishlist":
+    case "cart":
+    case "orders":
+    case "notifications":
+      return <StandalonePage />;
+    default:
+      return <HomePage />;
+  }
+};
+
+// ==========================================
 // APPSHELL MAIN CONTROLLER
 // ==========================================
 
 const AppShell = () => {
-  const { currentPage, isLoading, toastMessage } = useApp();
-
-  const renderPage = () => {
-    if (isLoading) return <ProductGridSkeleton count={8} />;
-
-    switch (currentPage) {
-      case "home":
-        return <HomePage />;
-      case "category":
-      case "products":
-      case "search":
-        return <ProductListingPage />;
-      case "profile":
-        return <ProfilePage />;
-      case "product-detail":
-      case "checkout":
-      case "order-success":
-      case "wishlist":
-      case "cart":
-      case "orders":
-      case "notifications":
-        return <StandalonePage />;
-      default:
-        return <HomePage />;
-    }
-  };
+  const { toastMessage } = useApp();
 
   return (
     <div className="h-[100dvh] w-full flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
@@ -1376,7 +1414,7 @@ const AppShell = () => {
 
       {/* Main Independent Scrollable Area */}
       <main id="main-content-area" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-        {renderPage()}
+        <MainContent />
       </main>
 
       <BottomNavigation />
