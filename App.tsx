@@ -637,13 +637,11 @@ const Header = () => {
 };
 
 const BottomNavigation = () => {
-  const { currentPage, navigateTo, cartCount } = useApp();
+  const { currentPage, navigateTo } = useApp();
 
   const navItems = [
     { id: "home", label: "Home", icon: Home },
     { id: "category", label: "Categories", icon: Grid },
-    { id: "cart", label: "Cart", icon: ShoppingCart, badge: cartCount },
-    { id: "orders", label: "Orders", icon: Package },
     { id: "profile", label: "Profile", icon: User }
   ];
 
