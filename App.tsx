@@ -460,7 +460,7 @@ const ProductGridSkeleton = ({ count = 6 }) => (
 // ==========================================
 
 const ProductCard = ({ product }) => {
-  const { navigateTo, wishlist, toggleWishlist, addToCart } = useApp();
+  const { navigateTo, wishlist, toggleWishlist } = useApp();
   const isWishlisted = wishlist.includes(product.id);
 
   return (
@@ -521,12 +521,6 @@ const ProductCard = ({ product }) => {
             )}
           </div>
 
-          <button
-            onClick={() => addToCart(product)}
-            className="w-full py-2 bg-slate-900 dark:bg-slate-100 hover:bg-orange-600 dark:hover:bg-orange-500 text-white dark:text-slate-900 hover:text-white dark:hover:text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
-          </button>
         </div>
       </div>
     </div>
