@@ -1312,6 +1312,33 @@ const NotificationsPage = () => {
 };
 
 // ==========================================
+// STANDALONE PAGE CONTROLLER
+// ==========================================
+
+const StandalonePage = () => {
+  const { currentPage } = useApp();
+
+  switch (currentPage) {
+    case "product-detail":
+      return <ProductDetailPage />;
+    case "checkout":
+      return <CheckoutPage />;
+    case "order-success":
+      return <OrderSuccessPage />;
+    case "wishlist":
+      return <WishlistPage />;
+    case "cart":
+      return <CartPage />;
+    case "orders":
+      return <OrdersPage />;
+    case "notifications":
+      return <NotificationsPage />;
+    default:
+      return null;
+  }
+};
+
+// ==========================================
 // APPSHELL MAIN CONTROLLER
 // ==========================================
 
@@ -1328,22 +1355,16 @@ const AppShell = () => {
       case "products":
       case "search":
         return <ProductListingPage />;
-      case "product-detail":
-        return <ProductDetailPage />;
-      case "wishlist":
-        return <WishlistPage />;
-      case "cart":
-        return <CartPage />;
-      case "checkout":
-        return <CheckoutPage />;
-      case "order-success":
-        return <OrderSuccessPage />;
-      case "orders":
-        return <OrdersPage />;
       case "profile":
         return <ProfilePage />;
+      case "product-detail":
+      case "checkout":
+      case "order-success":
+      case "wishlist":
+      case "cart":
+      case "orders":
       case "notifications":
-        return <NotificationsPage />;
+        return <StandalonePage />;
       default:
         return <HomePage />;
     }
