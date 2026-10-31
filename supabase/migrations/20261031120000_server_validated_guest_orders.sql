@@ -11,7 +11,7 @@ create or replace function public.create_guest_order(
 ) returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
 declare
   v_item jsonb;
@@ -123,7 +123,7 @@ create or replace function public.release_guest_order_inventory(p_order_id uuid)
 returns boolean
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
 declare
   v_status text;
@@ -190,7 +190,7 @@ create or replace function public.apply_duitku_callback(
 ) returns text
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
 declare
   v_order public.orders%rowtype;
@@ -255,7 +255,7 @@ begin
 
   -- A late success after stock has been released (or after another terminal
   -- transition) must never silently reactivate the order or decrement stock.
-  if p_result_code = '00' and v_order.status <> 'SUCCESS' then
+  if p_result_code = '00' and v_order.status in ('FAILED','CANCELLED','EXPIRED') then
     update public.orders
       set status = 'PAYMENT_REVIEW',
           result_code = p_result_code,
@@ -295,7 +295,7 @@ create or replace function public.consume_guest_checkout_rate_limit(p_ip_hash te
 returns boolean
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
 declare
   v_count integer;
