@@ -540,34 +540,37 @@ const BottomActionBar = () => {
     selectedQuantity,
     addToCart,
     cart,
+    setCart,
     cartTotal,
     cartCount,
+    checkoutDetails,
     wishlist,
     toggleWishlist,
     orders,
     setOrders,
+    setActiveOrder,
     triggerToast
   } = useApp();
 
   const isWishlisted = selectedProduct ? wishlist.includes(selectedProduct.id) : false;
 
-  const handleCompleteOrder = () => {
-    if (cart.length === 0) {
-      triggerToast("Cart is empty");
-      navigateTo("products");
-      return;
-    }
-    const newOrd = {
-      id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
-      date: new Date().toISOString().split("T")[0],
-      status: "Processing",
-      total: cartTotal,
-      items: [...cart],
-      trackingNumber: "JNE-8821903",
-      address: "Jl. Jend. Sudirman No. 45, Jakarta Selatan"
-    };
-    setOrders([newOrd, ...orders]);
-    navigateTo("order-success");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleCompleteOrder = async () => {
+    if (cart.length === 0) { triggerToast("Cart is empty"); navigateTo("products"); return; }
+    if (!checkoutDetails.name.trim() || !checkoutDetails.phone.trim() || !checkoutDetails.email.trim() || !checkoutDetails.address.trim()) { triggerToast("Complete all shipping details before checkout"); return; }
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-order", {
+        body: { customerName: checkoutDetails.name, customerPhone: checkoutDetails.phone, customerEmail: checkoutDetails.email, shippingAddress: { address: checkoutDetails.address }, items: cart.map((item) => ({ productId: item.product.id, quantity: item.quantity, color: item.selectedColor, size: item.selectedSize })) },
+      });
+      if (error || !data?.success || !data?.order?.paymentUrl) { triggerToast(data?.error || error?.message || "Backend has not confirmed this order"); return; }
+      const confirmedOrder = data.order;
+      setActiveOrder(confirmedOrder);
+      setOrders((current) => [{ id: confirmedOrder.merchantOrderId, date: new Date().toISOString().slice(0, 10), status: confirmedOrder.status, total: confirmedOrder.amount, items: [...cart], trackingNumber: "", address: checkoutDetails.address }, ...current]);
+      setCart([]);
+      navigateTo("order-success", confirmedOrder);
+    } catch { triggerToast("Checkout failed. No order success was recorded."); }
+    finally { setIsSubmitting(false); }
   };
 
   return (
@@ -937,14 +940,14 @@ const ProductDetailPage = () => {
   const product = selectedProduct ?? products[0];
   const [selectedImg, setSelectedImg] = useState(product?.images?.[0] ?? "");
   const relatedProducts = products.filter((item) => item.id !== product?.id).slice(0, 4);
-  const isWishlisted = wishlist.includes(product.id);
-  const stock = Math.max(0, Number(product.stock) || 0);
-
   useEffect(() => {
     if (product?.images?.[0]) setSelectedImg(product.images[0]);
   }, [product?.id, product?.images]);
 
   if (!product) return <div className="py-16 text-center text-sm text-slate-500">Product is not available.</div>;
+
+  const isWishlisted = wishlist.includes(product.id);
+  const stock = Math.max(0, Number(product.stock) || 0);
 
   const handleShare = async () => {
     const shareData = { title: product.name, url: window.location.href };
@@ -1301,7 +1304,8 @@ const CartPage = () => {
 
 // --- F. CHECKOUT PAGE ---
 const CheckoutPage = () => {
-  const { cartTotal } = useApp();
+  const { cartTotal, checkoutDetails, setCheckoutDetails } = useApp();
+  const updateField = (field, value) => setCheckoutDetails((current) => ({ ...current, [field]: value }));
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -1314,21 +1318,35 @@ const CheckoutPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <input
             type="text"
-            defaultValue="Alex Johnson"
+            value={checkoutDetails.name}
+            onChange={(event) => updateField("name", event.target.value)}
+            autoComplete="name"
             className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl outline-none"
             placeholder="Full Name"
           />
           <input
             type="text"
-            defaultValue="+62 812-3456-7890"
+            value={checkoutDetails.phone}
+            onChange={(event) => updateField("phone", event.target.value)}
+            autoComplete="tel"
             className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl outline-none"
             placeholder="Phone Number"
           />
           <input
-            type="text"
-            defaultValue="Jl. Jend. Sudirman No. 45, Jakarta Selatan"
+            type="email"
+            value={checkoutDetails.email}
+            onChange={(event) => updateField("email", event.target.value)}
+            autoComplete="email"
             className="sm:col-span-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-xl outline-none"
-            placeholder="Address"
+            placeholder="Email"
+          />
+          <input
+            type="text"
+            value={checkoutDetails.address}
+            onChange={(event) => updateField("address", event.target.value)}
+            autoComplete="street-address"
+            className="sm:col-span-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-xl outline-none"
+            placeholder="Shipping address"
           />
         </div>
       </div>
@@ -1361,13 +1379,16 @@ const CheckoutPage = () => {
 
 // --- G. ORDER SUCCESS PAGE ---
 const OrderSuccessPage = () => {
+  const { activeOrder } = useApp();
   return (
     <div className="max-w-md mx-auto text-center py-16 space-y-4">
       <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
         <CheckCircle className="w-8 h-8" />
       </div>
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Order Successful!</h1>
-      <p className="text-xs text-slate-500">Thank you for your purchase. We are preparing your shipment.</p>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Order Created — Payment Pending</h1>
+      <p className="text-xs text-slate-500">Your order is saved. Complete payment to confirm your purchase.</p>
+      {activeOrder?.merchantOrderId && <p className="text-xs font-semibold">Order: {activeOrder.merchantOrderId}</p>}
+      {activeOrder?.paymentUrl && <a href={activeOrder.paymentUrl} rel="noreferrer" className="inline-flex px-5 py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold">Continue to payment</a>}
     </div>
   );
 };
