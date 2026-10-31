@@ -232,6 +232,7 @@ export const AppProvider = ({ children }) => {
         isLoading,
         toastMessage,
         cart,
+        setCart,
         addToCart,
         updateQuantity,
         removeFromCart,
@@ -648,9 +649,10 @@ const BottomActionBar = () => {
 
             <button
               onClick={handleCompleteOrder}
+              disabled={isSubmitting}
               className="px-7 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <span>Place Order</span>
+              <span>{isSubmitting ? "Processing..." : "Place Order"}</span>
               <Check className="w-4 h-4" />
             </button>
           </div>
