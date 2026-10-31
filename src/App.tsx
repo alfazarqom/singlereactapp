@@ -464,9 +464,9 @@ const ProductCard = ({ product }) => {
   const isWishlisted = wishlist.includes(product.id);
 
   return (
-    <div className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-      {/* Top Media */}
-      <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer" onClick={() => navigateTo("product-detail", product)}>
+    <div className="group flex flex-col gap-2">
+      {/* Product Media */}
+      <div className="relative aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer" onClick={() => navigateTo("product-detail", product)}>
         <img
           src={product.images[0]}
           alt={product.name}
@@ -492,8 +492,8 @@ const ProductCard = ({ product }) => {
         </button>
       </div>
 
-      {/* Info Body */}
-      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
+      {/* Product Info: outside the media card, without padding */}
+      <div className="flex flex-1 flex-col justify-between space-y-2">
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
             <span>{product.brand}</span>
