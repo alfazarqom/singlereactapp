@@ -489,7 +489,6 @@ const ProductGridSkeleton = ({ count = 6 }) => (
 
 const ProductCard = ({ product }) => {
   const { navigateTo, wishlist, toggleWishlist } = useApp();
-  const isWishlisted = wishlist.includes(product.id);
 
   return (
     <div className="group flex flex-col gap-0.5">
@@ -800,7 +799,8 @@ const BottomActionBar = () => {
                   const added = addToCart(selectedProduct, selectedQuantity, selectedColor, selectedSize);
                   if (added) navigateTo("checkout");
                 }}
-                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                disabled={selectedProduct.stock <= 0 || selectedQuantity > selectedProduct.stock}
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Buy Now</span>
                 <ChevronRight className="w-4 h-4" />
@@ -1121,8 +1121,7 @@ const ProductDetailPage = () => {
     setSelectedSize,
     selectedQuantity: qty,
     setSelectedQuantity: setQty,
-    wishlist,
-    toggleWishlist
+    wishlist
   } = useApp();
   const product = selectedProduct || MOCK_PRODUCTS[0];
   const [selectedImg, setSelectedImg] = useState(product.images[0]);
