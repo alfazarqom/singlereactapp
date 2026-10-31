@@ -1,7 +1,7 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext } from "react";
 import { MOCK_NOTIFICATIONS, MOCK_PRODUCTS } from "../../data/mockData";
 
-const AppContext = createContext(null);
+export const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
   const [currentPage, setCurrentPage] = useState("home");
