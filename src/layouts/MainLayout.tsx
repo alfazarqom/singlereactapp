@@ -1,5 +1,5 @@
 import React from "react";
-import { useApp } from "../app/context/AppContext";
+import { useApp } from "../hooks/useApp";
 import { ProductGridSkeleton } from "../components/common/Skeletons";
 import HomePage from "../pages/HomePage";
 import ProductListingPage from "../pages/ProductListingPage";
