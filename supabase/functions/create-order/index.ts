@@ -25,6 +25,19 @@ Deno.serve(withSupabase({ auth: "none" }, async (req, ctx) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ success: false, error: "Method not allowed" }, 405);
 
+  const clientIp = req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ipDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(clientIp));
+  const ipHash = Array.from(new Uint8Array(ipDigest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  const { data: withinLimit, error: rateLimitError } = await ctx.supabaseAdmin.rpc(
+    "consume_guest_checkout_rate_limit", { p_ip_hash: ipHash },
+  );
+  if (rateLimitError) {
+    console.error("Guest checkout rate limit unavailable:", rateLimitError.message);
+    return json({ success: false, error: "Checkout is temporarily unavailable." }, 503);
+  }
+  if (withinLimit !== true) return json({ success: false, error: "Terlalu banyak percobaan checkout. Coba lagi dalam 15 menit." }, 429);
+
   let createdOrderId: string | null = null;
   try {
     const body = await req.json();
