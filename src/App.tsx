@@ -441,20 +441,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return [INITIAL_PRODUCTS[1].id, INITIAL_PRODUCTS[3].id];
   });
 
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "ORD-98231",
-      merchantOrderId: "ORD-98231",
-      date: "2026-10-24",
-      status: "PAID",
-      total: 2499000,
-      items: [{ product: INITIAL_PRODUCTS[0], quantity: 1, selectedColor: "Matte Black", selectedSize: "Standard" }],
-      customerName: "Alex Johnson",
-      customerAddress: "Jl. Jend. Sudirman No. 45, Jakarta Selatan, 12190",
-      duitkuReference: "REF-PROD-98231",
-      paymentMethod: "Duitku POP (BCA VA)"
-    }
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
 
