@@ -495,7 +495,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsDbLive(true);
       }
 
-      // Guest order history is not fetched publicly; order reads are restricted by RLS.\n    } catch (e) {
+      // Guest order history is not fetched publicly; order reads are restricted by RLS.
+    } catch (e) {
       console.warn("[AppProvider] Supabase query note:", e);
     } finally {
       setIsDataLoading(false);
