@@ -1,5 +1,6 @@
 import React from "react";
-import { AppProvider, useApp } from "./context/AppContext";
+import { AppProvider } from "./context/AppContext";
+import { useApp } from "../hooks/useApp";
 import { STANDALONE_PAGES, Header, BottomNavigation } from "../components/layout/Navigation";
 import BottomActionBar from "../components/layout/BottomActionBar";
 import MainLayout from "../layouts/MainLayout";
