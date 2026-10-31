@@ -119,7 +119,9 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Unable to validate current product prices and stock." }, 500);
     }
 
-    const productsById = new Map((products || []).map((product: any) => [String(product.id), product]));
+    const productsById = new Map<string, any>(
+      (products || []).map((product: any) => [String(product.id), product] as [string, any]),
+    );
     if (productsById.size !== productIds.length) {
       return jsonResponse({ error: "One or more ordered products no longer exist." }, 409);
     }
