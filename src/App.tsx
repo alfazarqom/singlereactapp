@@ -277,6 +277,9 @@ const AppContext = createContext(null);
 export const AppProvider = ({ children }) => {
   const [currentPage, setCurrentPage] = useState("home");
   const [selectedProduct, setSelectedProduct] = useState(MOCK_PRODUCTS[0]);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -327,7 +330,12 @@ export const AppProvider = ({ children }) => {
   // Simulate Page Transitions with Loading Skeleton
   const navigateTo = (page, data = null) => {
     setIsLoading(true);
-    if (page === "product-detail" && data) setSelectedProduct(data);
+    if (page === "product-detail" && data) {
+      setSelectedProduct(data);
+      setSelectedColor(data.colors ? data.colors[0] : "");
+      setSelectedSize(data.sizes ? data.sizes[0] : "");
+      setSelectedQuantity(1);
+    }
     if (page === "category" && data) setSelectedCategory(data);
     if (page === "order-detail" && data) setActiveOrder(data);
 
@@ -398,6 +406,11 @@ export const AppProvider = ({ children }) => {
         currentPage,
         navigateTo,
         selectedProduct,
+        selectedColor,
+        setSelectedColor,
+        selectedSize,
+        selectedQuantity,
+        setSelectedQuantity,
         selectedCategory,
         setSelectedCategory,
         searchQuery,
@@ -698,6 +711,9 @@ const BottomActionBar = () => {
     currentPage,
     navigateTo,
     selectedProduct,
+    selectedColor,
+    selectedSize,
+    selectedQuantity,
     addToCart,
     cart,
     cartTotal,
@@ -757,7 +773,7 @@ const BottomActionBar = () => {
 
             <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
               <button
-                onClick={() => addToCart(selectedProduct, 1)}
+                onClick={() => addToCart(selectedProduct, selectedQuantity, selectedColor, selectedSize)}
                 className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-orange-500 text-orange-600 dark:text-orange-400 font-semibold text-xs hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <ShoppingCart className="w-4 h-4" />
@@ -765,7 +781,7 @@ const BottomActionBar = () => {
               </button>
               <button
                 onClick={() => {
-                  addToCart(selectedProduct, 1);
+                  addToCart(selectedProduct, selectedQuantity, selectedColor, selectedSize);
                   navigateTo("checkout");
                 }}
                 className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -1080,14 +1096,9 @@ const ProductListingPage = () => {
 
 // --- C. PRODUCT DETAIL PAGE ---
 const ProductDetailPage = () => {
-  const { selectedProduct, addToCart, navigateTo, toggleWishlist, wishlist } = useApp();
+  const { selectedProduct, navigateTo, selectedColor, setSelectedColor, selectedQuantity: qty, setSelectedQuantity: setQty } = useApp();
   const product = selectedProduct || MOCK_PRODUCTS[0];
   const [selectedImg, setSelectedImg] = useState(product.images[0]);
-  const [selectedColor, setSelectedColor] = useState(product.colors ? product.colors[0] : "");
-  const [selectedSize, setSelectedSize] = useState(product.sizes ? product.sizes[0] : "");
-  const [qty, setQty] = useState(1);
-
-  const isWishlisted = wishlist.includes(product.id);
 
   return (
     <div className="space-y-8 pb-20">
@@ -1192,25 +1203,6 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={() => addToCart(product, qty, selectedColor, selectedSize)}
-              className="flex-1 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
-            >
-              <ShoppingCart className="w-4 h-4" /> Add to Shopping Cart
-            </button>
-            <button
-              onClick={() => toggleWishlist(product.id)}
-              className={`p-3.5 rounded-xl border transition-all ${
-                isWishlisted
-                  ? "bg-red-500 text-white border-red-500"
-                  : "border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -1219,7 +1211,7 @@ const ProductDetailPage = () => {
 
 // --- D. WISHLIST PAGE ---
 const WishlistPage = () => {
-  const { wishlist, navigateTo } = useApp();
+  const { wishlist } = useApp();
   const wishlistedProducts = MOCK_PRODUCTS.filter((p) => wishlist.includes(p.id));
 
   return (
@@ -1230,12 +1222,6 @@ const WishlistPage = () => {
         <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 space-y-3">
           <Heart className="w-12 h-12 text-slate-300 mx-auto" />
           <p className="text-sm text-slate-500">Your wishlist is currently empty.</p>
-          <button
-            onClick={() => navigateTo("products")}
-            className="px-5 py-2.5 bg-orange-500 text-white font-semibold rounded-xl text-xs"
-          >
-            Explore Catalog
-          </button>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -1330,12 +1316,6 @@ const CartPage = () => {
               <span className="text-orange-600">{formatIDR(cartTotal)}</span>
             </div>
           </div>
-          <button
-            onClick={() => navigateTo("checkout")}
-            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs shadow-lg shadow-orange-500/20"
-          >
-            Proceed to Checkout
-          </button>
         </div>
       </div>
     </div>
@@ -1344,21 +1324,7 @@ const CartPage = () => {
 
 // --- F. CHECKOUT PAGE ---
 const CheckoutPage = () => {
-  const { cartTotal, cart, setOrders, orders, navigateTo } = useApp();
-
-  const handleCompleteOrder = () => {
-    const newOrd = {
-      id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
-      date: new Date().toISOString().split("T")[0],
-      status: "Processing",
-      total: cartTotal,
-      items: [...cart],
-      trackingNumber: "JNE-8821903",
-      address: "Jl. Jend. Sudirman No. 45, Jakarta Selatan"
-    };
-    setOrders([newOrd, ...orders]);
-    navigateTo("order-success");
-  };
+  const { cartTotal } = useApp();
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -1411,12 +1377,6 @@ const CheckoutPage = () => {
           <p className="text-[10px] text-slate-400">Total Payment</p>
           <p className="text-xl font-semibold text-orange-400">{formatIDR(cartTotal)}</p>
         </div>
-        <button
-          onClick={handleCompleteOrder}
-          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs shadow-lg shadow-orange-500/30"
-        >
-          Place Order
-        </button>
       </div>
     </div>
   );
@@ -1424,8 +1384,6 @@ const CheckoutPage = () => {
 
 // --- G. ORDER SUCCESS PAGE ---
 const OrderSuccessPage = () => {
-  const { navigateTo } = useApp();
-
   return (
     <div className="max-w-md mx-auto text-center py-16 space-y-4">
       <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
@@ -1433,20 +1391,6 @@ const OrderSuccessPage = () => {
       </div>
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Order Successful!</h1>
       <p className="text-xs text-slate-500">Thank you for your purchase. We are preparing your shipment.</p>
-      <div className="pt-4 flex flex-col gap-2">
-        <button
-          onClick={() => navigateTo("orders")}
-          className="w-full py-3 bg-orange-500 text-white font-semibold rounded-xl text-xs"
-        >
-          View My Orders
-        </button>
-        <button
-          onClick={() => navigateTo("products")}
-          className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs"
-        >
-          Continue Shopping
-        </button>
-      </div>
     </div>
   );
 };
