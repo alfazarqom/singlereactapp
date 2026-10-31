@@ -51,6 +51,7 @@ export interface DuitkuInvoiceResponse {
   amount?: string;
   statusCode: string;
   statusMessage?: string;
+  environment: "sandbox" | "production";
 }
 
 /** Load the official Duitku POP JavaScript SDK. */
@@ -107,6 +108,14 @@ export async function createDuitkuInvoice(
     throw new Error(data?.statusMessage || "Duitku tidak mengembalikan invoice yang valid.");
   }
 
+  const clientEnvironment = import.meta.env.VITE_DUITKU_ENV;
+  if (clientEnvironment !== "sandbox" && clientEnvironment !== "production") {
+    throw new Error("VITE_DUITKU_ENV harus diatur ke sandbox atau production.");
+  }
+  if (data.environment !== clientEnvironment) {
+    throw new Error("Environment Duitku frontend dan backend tidak cocok.");
+  }
+
   return data as DuitkuInvoiceResponse;
 }
 
@@ -125,7 +134,11 @@ export async function processDuitkuPayment(
 ): Promise<void> {
   if (!reference) throw new Error("Referensi pembayaran Duitku tidak tersedia.");
 
-  await loadDuitkuScript(false);
+  const environment = import.meta.env.VITE_DUITKU_ENV;
+  if (environment !== "sandbox" && environment !== "production") {
+    throw new Error("VITE_DUITKU_ENV harus diatur ke sandbox atau production.");
+  }
+  await loadDuitkuScript(environment === "production");
 
   if (!window.checkout?.process) {
     throw new Error("Duitku POP tidak tersedia. Pembayaran tidak dapat dilanjutkan.");
