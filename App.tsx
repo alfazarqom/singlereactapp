@@ -980,6 +980,15 @@ const ProductDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <BottomActionBar>
+        <button
+          onClick={() => addToCart(product, qty, selectedColor, selectedSize)}
+          className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+        >
+          <ShoppingCart className="w-4 h-4" /> Add to Shopping Cart
+        </button>
+      </BottomActionBar>
     </div>
   );
 };
@@ -1347,19 +1356,7 @@ const StandalonePage = () => {
       <main id="main-content-area" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
         {page}
       </main>
-      {currentPage === "product-detail" && (
-        <BottomActionBar>
-          <button
-            onClick={() => {
-              const productDetailButton = document.querySelector("[data-product-detail-add]");
-              productDetailButton?.click();
-            }}
-            className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
-          >
-            <ShoppingCart className="w-4 h-4" /> Add to Shopping Cart
-          </button>
-        </BottomActionBar>
-      )}
+
     </div>
   );
 };
