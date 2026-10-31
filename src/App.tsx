@@ -493,7 +493,7 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Product Info: price above, rating and review count at the bottom */}
-      <div className="flex flex-1 flex-col space-y-1">
+      <div className="flex flex-1 flex-col space-y-0.5">
         <div className="space-y-0.5">
           <span className="text-[11px] text-slate-400 font-medium">{product.brand}</span>
           <h3
@@ -504,7 +504,7 @@ const ProductCard = ({ product }) => {
           </h3>
         </div>
 
-        <div className="pt-1">
+        <div className="space-y-0.5">
           <div className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
             {formatIDR(product.price)}
           </div>
@@ -515,7 +515,7 @@ const ProductCard = ({ product }) => {
           )}
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-[11px]">
+        <div className="flex items-center justify-between gap-2 text-[11px]">
           <div
             className="flex items-center gap-0.5 font-semibold text-amber-500"
             aria-label={`Rating ${product.rating} dari 5`}
