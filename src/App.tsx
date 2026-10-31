@@ -853,6 +853,7 @@ const HomePage = () => {
 // --- B. CATEGORY & PRODUCT LISTING PAGE ---
 const ProductListingPage = () => {
   const { selectedCategory, setSelectedCategory, navigateTo, products, isProductsLoading, productLoadError } = useApp();
+  const categories = [...new Set(products.map((product) => product.category))];
   const [sortBy, setSortBy] = useState("popular");
   const [priceRange, setPriceRange] = useState(5000000);
 
@@ -874,7 +875,7 @@ const ProductListingPage = () => {
 
         {/* Categories Chips */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {["All", ...MOCK_CATEGORIES.map((c) => c.name)].map((cat) => (
+          {["All", ...categories].map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
