@@ -95,23 +95,59 @@ Deno.serve(async (req) => {
     }
 
     const orderRow = order as OrderRow;
-    const itemDetails = Array.isArray(orderRow.items)
-      ? orderRow.items.map((entry: any) => {
-          const product = entry?.product ?? entry;
-          return {
-            name: String(product?.name || "Storefront item").slice(0, 50),
-            price: Number(product?.price),
-            quantity: Number(entry?.quantity ?? 1),
-          };
-        }).filter((item) =>
-          Number.isSafeInteger(item.price) && item.price >= 0 &&
-          Number.isSafeInteger(item.quantity) && item.quantity > 0
-        )
-      : [];
+    if (!Array.isArray(orderRow.items) || orderRow.items.length === 0) {
+      return jsonResponse({ error: "The order does not contain valid items." }, 400);
+    }
 
+    const requestedItems = orderRow.items.map((entry: any) => ({
+      productId: String(entry?.product?.id || entry?.product_id || ""),
+      quantity: Number(entry?.quantity),
+    }));
+    if (requestedItems.some((item) =>
+      !item.productId || !Number.isSafeInteger(item.quantity) || item.quantity <= 0
+    )) {
+      return jsonResponse({ error: "The order contains an invalid product or quantity." }, 400);
+    }
+
+    const productIds = [...new Set(requestedItems.map((item) => item.productId))];
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("id,name,price,stock")
+      .in("id", productIds);
+    if (productsError) {
+      console.error("[create-invoice] Product validation failed:", productsError.message);
+      return jsonResponse({ error: "Unable to validate current product prices and stock." }, 500);
+    }
+
+    const productsById = new Map((products || []).map((product: any) => [String(product.id), product]));
+    if (productsById.size !== productIds.length) {
+      return jsonResponse({ error: "One or more ordered products no longer exist." }, 409);
+    }
+
+    const quantitiesByProduct = new Map<string, number>();
+    for (const item of requestedItems) {
+      quantitiesByProduct.set(item.productId, (quantitiesByProduct.get(item.productId) || 0) + item.quantity);
+    }
+    for (const [productId, quantity] of quantitiesByProduct) {
+      const product = productsById.get(productId) as any;
+      if (!Number.isSafeInteger(Number(product.price)) || Number(product.price) < 0 ||
+          !Number.isSafeInteger(Number(product.stock)) || Number(product.stock) < quantity) {
+        return jsonResponse({ error: "A product price or available stock has changed. Refresh your cart." }, 409);
+      }
+    }
+
+    const itemDetails = requestedItems.map((item) => {
+      const product = productsById.get(item.productId) as any;
+      return {
+        name: String(product.name || "Storefront item").slice(0, 50),
+        price: Number(product.price),
+        quantity: item.quantity,
+      };
+    });
     const itemDetailsTotal = itemDetails.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    if (itemDetails.length === 0 || !Number.isSafeInteger(itemDetailsTotal) || itemDetailsTotal !== paymentAmount) {
-      return jsonResponse({ error: "Stored order items do not match the requested payment amount." }, 400);
+    if (!Number.isSafeInteger(itemDetailsTotal) || itemDetailsTotal !== paymentAmount ||
+        storedAmount !== itemDetailsTotal) {
+      return jsonResponse({ error: "Current product prices do not match the stored order total." }, 400);
     }
 
     const timestamp = Date.now().toString();
