@@ -1,7 +1,7 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './App';
+import App from './app/App';
 
 // Block all browser zoom mechanisms (touch gestures, wheel, keyboard shortcuts)
 const blockZoom = () => {
