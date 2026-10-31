@@ -474,7 +474,7 @@ const ProductCard = ({ product }) => {
           loading="lazy"
         />
         {product.discount > 0 && (
-          <span className="absolute top-2.5 left-2.5 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="absolute top-2.5 left-2.5 bg-orange-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
             -{product.discount}%
           </span>
         )}
@@ -497,7 +497,7 @@ const ProductCard = ({ product }) => {
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
             <span>{product.brand}</span>
-            <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+            <span className="flex items-center gap-0.5 text-amber-500 font-semibold">
               <Star className="w-3 h-3 fill-current" /> {product.rating}
             </span>
           </div>
@@ -511,7 +511,7 @@ const ProductCard = ({ product }) => {
 
         <div className="pt-2 space-y-2">
           <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+            <span className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
               {formatIDR(product.price)}
             </span>
             {product.originalPrice > product.price && (
@@ -596,9 +596,9 @@ const Header = () => {
           {/* Logo */}
           <button
             onClick={() => navigateTo("home")}
-            className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2 cursor-pointer"
+            className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-orange-500/30">
+            <div className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-semibold text-lg shadow-md shadow-orange-500/30">
               S
             </div>
             <span className="text-slate-900 dark:text-white">Storefront<span className="text-orange-500">.</span></span>
@@ -615,7 +615,7 @@ const Header = () => {
           >
             <Bell className="w-5 h-5" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1 right-1 bg-orange-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+              <span className="absolute top-1 right-1 bg-orange-500 text-white text-[10px] font-semibold rounded-full h-4 w-4 flex items-center justify-center">
                 {unreadNotifs}
               </span>
             )}
@@ -629,7 +629,7 @@ const Header = () => {
           >
             <ShoppingCart className="w-5 h-5" />
             {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-slate-900 dark:bg-orange-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md">
+              <span className="absolute -top-0.5 -right-0.5 bg-slate-900 dark:bg-orange-500 text-white text-[10px] font-semibold rounded-full h-5 w-5 flex items-center justify-center shadow-md">
                 {cartCount}
               </span>
             )}
@@ -640,7 +640,7 @@ const Header = () => {
             onClick={() => navigateTo("profile")}
             className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-1"
           >
-            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200">
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-700 dark:text-slate-200">
               AJ
             </div>
           </button>
@@ -671,14 +671,14 @@ const BottomNavigation = () => {
               onClick={() => navigateTo(item.id)}
               className={`relative flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
                 isActive
-                  ? "text-orange-600 dark:text-orange-400 font-bold scale-105"
+                  ? "text-orange-600 dark:text-orange-400 font-semibold scale-105"
                   : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               }`}
             >
               <Icon className="w-5 h-5" />
               <span className="text-[10px] font-medium">{item.label}</span>
               {Boolean(item.badge && item.badge > 0) && (
-                <span className="absolute top-0 right-2 bg-orange-500 text-white text-[9px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
+                <span className="absolute top-0 right-2 bg-orange-500 text-white text-[9px] font-semibold rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
                   {item.badge}
                 </span>
               )}
@@ -746,7 +746,7 @@ const BottomActionBar = () => {
               </button>
               <div>
                 <p className="text-[10px] text-slate-400">Total Price</p>
-                <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-none">
+                <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white leading-none">
                   {formatIDR(selectedProduct.price)}
                 </p>
               </div>
@@ -755,7 +755,7 @@ const BottomActionBar = () => {
             <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
               <button
                 onClick={() => addToCart(selectedProduct, 1)}
-                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-orange-500 text-orange-600 dark:text-orange-400 font-bold text-xs hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-orange-500 text-orange-600 dark:text-orange-400 font-semibold text-xs hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <ShoppingCart className="w-4 h-4" />
                 <span>+ Cart</span>
@@ -765,7 +765,7 @@ const BottomActionBar = () => {
                   addToCart(selectedProduct, 1);
                   navigateTo("checkout");
                 }}
-                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Buy Now</span>
                 <ChevronRight className="w-4 h-4" />
@@ -778,7 +778,7 @@ const BottomActionBar = () => {
           <div className="w-full flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] text-slate-400">Total ({cartCount} items)</p>
-              <p className="text-base sm:text-lg font-black text-orange-600 leading-none">
+              <p className="text-base sm:text-lg font-semibold text-orange-600 leading-none">
                 {formatIDR(cartTotal)}
               </p>
             </div>
@@ -786,7 +786,7 @@ const BottomActionBar = () => {
             <button
               onClick={() => navigateTo("checkout")}
               disabled={cart.length === 0}
-              className={`px-7 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+              className={`px-7 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 transition-all ${
                 cart.length > 0
                   ? "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/25 cursor-pointer"
                   : "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
@@ -802,14 +802,14 @@ const BottomActionBar = () => {
           <div className="w-full flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] text-slate-400">Total Payable</p>
-              <p className="text-base sm:text-lg font-black text-orange-600 leading-none">
+              <p className="text-base sm:text-lg font-semibold text-orange-600 leading-none">
                 {formatIDR(cartTotal)}
               </p>
             </div>
 
             <button
               onClick={handleCompleteOrder}
-              className="px-7 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-7 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <span>Place Order</span>
               <Check className="w-4 h-4" />
@@ -821,14 +821,14 @@ const BottomActionBar = () => {
           <div className="w-full flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] text-slate-400">My Wishlist</p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+              <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
                 {wishlist.length} saved item{wishlist.length !== 1 ? "s" : ""}
               </p>
             </div>
 
             <button
               onClick={() => navigateTo("products")}
-              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <ShoppingCart className="w-4 h-4" />
               <span>Explore Products</span>
@@ -840,14 +840,14 @@ const BottomActionBar = () => {
           <div className="w-full flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] text-slate-400">Order History</p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+              <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
                 {orders.length} Order{orders.length !== 1 ? "s" : ""}
               </p>
             </div>
 
             <button
               onClick={() => navigateTo("products")}
-              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <ShoppingCart className="w-4 h-4" />
               <span>Continue Shopping</span>
@@ -863,7 +863,7 @@ const BottomActionBar = () => {
 
             <button
               onClick={() => navigateTo("products")}
-              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>Explore Deals</span>
@@ -875,7 +875,7 @@ const BottomActionBar = () => {
           <div className="w-full flex items-center justify-between gap-3">
             <button
               onClick={() => navigateTo("orders")}
-              className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Package className="w-4 h-4 text-orange-500" />
               <span>My Orders</span>
@@ -883,7 +883,7 @@ const BottomActionBar = () => {
 
             <button
               onClick={() => navigateTo("products")}
-              className="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <ShoppingCart className="w-4 h-4" />
               <span>Shop More</span>
@@ -912,7 +912,7 @@ const HomePage = () => {
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-500/20 border border-orange-500/40 text-orange-400 rounded-full text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" /> Autumn Tech & Fashion 2026
           </span>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-none text-white">
+          <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-none text-white">
             Curated Gear for Modern Lifestyle.
           </h1>
           <p className="text-slate-300 text-xs sm:text-base leading-relaxed">
@@ -921,7 +921,7 @@ const HomePage = () => {
           <div className="pt-2 flex flex-wrap gap-3">
             <button
               onClick={() => navigateTo("products")}
-              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all flex items-center gap-2 text-xs sm:text-sm"
+              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 transition-all flex items-center gap-2 text-xs sm:text-sm"
             >
               Shop Collection <ChevronRight className="w-4 h-4" />
             </button>
@@ -932,8 +932,8 @@ const HomePage = () => {
       {/* Category Horizontal Scroll */}
       <div className="space-y-4">
         <div className="flex justify-between items-center px-1">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Explore Categories</h2>
-          <button onClick={() => navigateTo("category")} className="text-xs font-bold text-orange-600 hover:underline">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Explore Categories</h2>
+          <button onClick={() => navigateTo("category")} className="text-xs font-semibold text-orange-600 hover:underline">
             View All
           </button>
         </div>
@@ -965,7 +965,7 @@ const HomePage = () => {
             <Truck className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Free Nationwide Express</h4>
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-white">Free Nationwide Express</h4>
             <p className="text-[11px] text-slate-500">Orders above Rp 500k</p>
           </div>
         </div>
@@ -974,7 +974,7 @@ const HomePage = () => {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">2-Year Warranty</h4>
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-white">2-Year Warranty</h4>
             <p className="text-[11px] text-slate-500">Official authentic products</p>
           </div>
         </div>
@@ -983,7 +983,7 @@ const HomePage = () => {
             <RefreshCw className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">30-Day Easy Return</h4>
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-white">30-Day Easy Return</h4>
             <p className="text-[11px] text-slate-500">Hassle-free money back</p>
           </div>
         </div>
@@ -993,10 +993,10 @@ const HomePage = () => {
       <div className="space-y-4">
         <div className="flex justify-between items-center px-1">
           <div>
-            <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">Featured Selections</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Featured Selections</h2>
             <p className="text-xs text-slate-500">Handpicked premium items for you</p>
           </div>
-          <button onClick={() => navigateTo("products")} className="text-xs font-bold text-orange-600 hover:underline">
+          <button onClick={() => navigateTo("products")} className="text-xs font-semibold text-orange-600 hover:underline">
             Explore All →
           </button>
         </div>
@@ -1026,7 +1026,7 @@ const ProductListingPage = () => {
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             {selectedCategory === "All" ? "Catalog Overview" : selectedCategory}
           </h1>
           <p className="text-xs text-slate-500">Showing {filtered.length} products</p>
@@ -1059,7 +1059,7 @@ const ProductListingPage = () => {
               setSelectedCategory("All");
               setPriceRange(5000000);
             }}
-            className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-bold"
+            className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-semibold"
           >
             Reset Filters
           </button>
@@ -1090,7 +1090,7 @@ const ProductDetailPage = () => {
     <div className="space-y-8 pb-20">
       <button
         onClick={() => navigateTo("products")}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Catalog
       </button>
@@ -1119,25 +1119,25 @@ const ProductDetailPage = () => {
         {/* Spec & Buy Block */}
         <div className="space-y-6">
           <div>
-            <span className="px-2.5 py-1 bg-orange-100 dark:bg-orange-950 text-orange-600 rounded-md text-[11px] font-bold">
+            <span className="px-2.5 py-1 bg-orange-100 dark:bg-orange-950 text-orange-600 rounded-md text-[11px] font-semibold">
               {product.category}
             </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-2 leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white mt-2 leading-tight">
               {product.name}
             </h1>
             <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-              <span className="flex items-center gap-1 text-amber-500 font-bold">
+              <span className="flex items-center gap-1 text-amber-500 font-semibold">
                 <Star className="w-4 h-4 fill-current" /> {product.rating}
               </span>
               <span>•</span>
               <span>{product.reviewCount} verified reviews</span>
               <span>•</span>
-              <span className="text-emerald-600 font-bold">In Stock ({product.stock})</span>
+              <span className="text-emerald-600 font-semibold">In Stock ({product.stock})</span>
             </div>
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-3xl font-semibold text-slate-900 dark:text-white">
               {formatIDR(product.price)}
             </span>
             {product.originalPrice > product.price && (
@@ -1154,7 +1154,7 @@ const ProductDetailPage = () => {
           {/* Color Variant */}
           {product.colors && (
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Select Color:</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select Color:</label>
               <div className="flex flex-wrap gap-2">
                 {product.colors.map((c) => (
                   <button
@@ -1175,13 +1175,13 @@ const ProductDetailPage = () => {
 
           {/* Quantity Selector */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Quantity:</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Quantity:</label>
             <div className="flex items-center gap-3">
               <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl p-1 bg-white dark:bg-slate-900">
                 <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="px-4 font-bold text-xs">{qty}</span>
+                <span className="px-4 font-semibold text-xs">{qty}</span>
                 <button onClick={() => setQty(qty + 1)} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">
                   <Plus className="w-4 h-4" />
                 </button>
@@ -1193,7 +1193,7 @@ const ProductDetailPage = () => {
           <div className="flex gap-3 pt-4">
             <button
               onClick={() => addToCart(product, qty, selectedColor, selectedSize)}
-              className="flex-1 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+              className="flex-1 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
             >
               <ShoppingCart className="w-4 h-4" /> Add to Shopping Cart
             </button>
@@ -1221,7 +1221,7 @@ const WishlistPage = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      <h1 className="text-2xl font-black text-slate-900 dark:text-white">My Saved Wishlist</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">My Saved Wishlist</h1>
 
       {wishlistedProducts.length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 space-y-3">
@@ -1229,7 +1229,7 @@ const WishlistPage = () => {
           <p className="text-sm text-slate-500">Your wishlist is currently empty.</p>
           <button
             onClick={() => navigateTo("products")}
-            className="px-5 py-2.5 bg-orange-500 text-white font-bold rounded-xl text-xs"
+            className="px-5 py-2.5 bg-orange-500 text-white font-semibold rounded-xl text-xs"
           >
             Explore Catalog
           </button>
@@ -1255,11 +1255,11 @@ const CartPage = () => {
         <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-400">
           <ShoppingCart className="w-10 h-10" />
         </div>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Your Cart is Empty</h2>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Your Cart is Empty</h2>
         <p className="text-xs text-slate-500">Explore our curated collection and add items to your cart.</p>
         <button
           onClick={() => navigateTo("products")}
-          className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-orange-500/20"
+          className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-orange-500/20"
         >
           Browse Catalog
         </button>
@@ -1269,7 +1269,7 @@ const CartPage = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      <h1 className="text-2xl font-black text-slate-900 dark:text-white">Shopping Cart</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Shopping Cart</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cart Item List */}
@@ -1289,7 +1289,7 @@ const CartPage = () => {
                   {item.product.name}
                 </h3>
                 <p className="text-[11px] text-slate-400">Color: {item.selectedColor}</p>
-                <p className="text-xs font-bold text-orange-600">{formatIDR(item.product.price)}</p>
+                <p className="text-xs font-semibold text-orange-600">{formatIDR(item.product.price)}</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1297,7 +1297,7 @@ const CartPage = () => {
                   <button onClick={() => updateQuantity(idx, -1)} className="p-1 text-slate-500">
                     <Minus className="w-3 h-3" />
                   </button>
-                  <span className="px-2 text-xs font-bold">{item.quantity}</span>
+                  <span className="px-2 text-xs font-semibold">{item.quantity}</span>
                   <button onClick={() => updateQuantity(idx, 1)} className="p-1 text-slate-500">
                     <Plus className="w-3 h-3" />
                   </button>
@@ -1312,24 +1312,24 @@ const CartPage = () => {
 
         {/* Order Summary */}
         <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4 h-fit">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Order Summary</h3>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">Order Summary</h3>
           <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span className="font-bold text-slate-900 dark:text-white">{formatIDR(cartTotal)}</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{formatIDR(cartTotal)}</span>
             </div>
             <div className="flex justify-between">
               <span>Estimated Delivery</span>
-              <span className="text-emerald-600 font-bold">FREE</span>
+              <span className="text-emerald-600 font-semibold">FREE</span>
             </div>
-            <div className="border-t border-slate-200 dark:border-slate-800 pt-2 flex justify-between text-sm font-extrabold text-slate-900 dark:text-white">
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-2 flex justify-between text-sm font-semibold text-slate-900 dark:text-white">
               <span>Total Payable</span>
               <span className="text-orange-600">{formatIDR(cartTotal)}</span>
             </div>
           </div>
           <button
             onClick={() => navigateTo("checkout")}
-            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg shadow-orange-500/20"
+            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs shadow-lg shadow-orange-500/20"
           >
             Proceed to Checkout
           </button>
@@ -1359,10 +1359,10 @@ const CheckoutPage = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      <h1 className="text-2xl font-black text-slate-900 dark:text-white">Checkout</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Checkout</h1>
 
       <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <MapPin className="w-4 h-4 text-orange-500" /> Shipping Address
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -1388,17 +1388,17 @@ const CheckoutPage = () => {
       </div>
 
       <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <CreditCard className="w-4 h-4 text-orange-500" /> Payment Method
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <label className="p-3 border-2 border-orange-500 rounded-xl bg-orange-50/30 dark:bg-orange-950/20 flex items-center gap-2 cursor-pointer">
             <input type="radio" name="pay" defaultChecked className="accent-orange-500" />
-            <span className="text-xs font-bold text-slate-900 dark:text-white">Bank Transfer</span>
+            <span className="text-xs font-semibold text-slate-900 dark:text-white">Bank Transfer</span>
           </label>
           <label className="p-3 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center gap-2 cursor-pointer">
             <input type="radio" name="pay" className="accent-orange-500" />
-            <span className="text-xs font-bold text-slate-900 dark:text-white">GoPay / QRIS</span>
+            <span className="text-xs font-semibold text-slate-900 dark:text-white">GoPay / QRIS</span>
           </label>
         </div>
       </div>
@@ -1406,11 +1406,11 @@ const CheckoutPage = () => {
       <div className="p-5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
         <div>
           <p className="text-[10px] text-slate-400">Total Payment</p>
-          <p className="text-xl font-black text-orange-400">{formatIDR(cartTotal)}</p>
+          <p className="text-xl font-semibold text-orange-400">{formatIDR(cartTotal)}</p>
         </div>
         <button
           onClick={handleCompleteOrder}
-          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg shadow-orange-500/30"
+          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs shadow-lg shadow-orange-500/30"
         >
           Place Order
         </button>
@@ -1428,18 +1428,18 @@ const OrderSuccessPage = () => {
       <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
         <CheckCircle className="w-8 h-8" />
       </div>
-      <h1 className="text-2xl font-black text-slate-900 dark:text-white">Order Successful!</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Order Successful!</h1>
       <p className="text-xs text-slate-500">Thank you for your purchase. We are preparing your shipment.</p>
       <div className="pt-4 flex flex-col gap-2">
         <button
           onClick={() => navigateTo("orders")}
-          className="w-full py-3 bg-orange-500 text-white font-bold rounded-xl text-xs"
+          className="w-full py-3 bg-orange-500 text-white font-semibold rounded-xl text-xs"
         >
           View My Orders
         </button>
         <button
           onClick={() => navigateTo("products")}
-          className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs"
+          className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs"
         >
           Continue Shopping
         </button>
@@ -1454,7 +1454,7 @@ const OrdersPage = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      <h1 className="text-2xl font-black text-slate-900 dark:text-white">Order History</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Order History</h1>
       <div className="space-y-4">
         {orders.map((ord) => (
           <div
@@ -1462,14 +1462,14 @@ const OrdersPage = () => {
             className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-3"
           >
             <div className="flex justify-between items-center text-xs border-b border-slate-100 dark:border-slate-800 pb-2">
-              <span className="font-bold text-slate-900 dark:text-white">{ord.id}</span>
-              <span className="px-2.5 py-0.5 bg-orange-100 dark:bg-orange-950 text-orange-600 rounded-full text-[10px] font-bold">
+              <span className="font-semibold text-slate-900 dark:text-white">{ord.id}</span>
+              <span className="px-2.5 py-0.5 bg-orange-100 dark:bg-orange-950 text-orange-600 rounded-full text-[10px] font-semibold">
                 {ord.status}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-slate-500">Date: {ord.date}</span>
-              <span className="text-sm font-extrabold text-slate-900 dark:text-white">{formatIDR(ord.total)}</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">{formatIDR(ord.total)}</span>
             </div>
           </div>
         ))}
@@ -1489,7 +1489,7 @@ const ProfileGuestPage = () => {
           <User className="w-9 h-9 text-slate-400" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Guest Profile</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Guest Profile</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">You are currently browsing as a guest.</p>
         </div>
 
@@ -1504,11 +1504,11 @@ const ProfileGuestPage = () => {
               <div className="p-2 rounded-xl bg-red-100 dark:bg-red-900/40 group-hover:scale-110 transition-transform">
                 <Heart className="w-4 h-4 fill-red-500 text-red-500" />
               </div>
-              <span className="text-xs font-black bg-red-500 text-white px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold bg-red-500 text-white px-2 py-0.5 rounded-full">
                 {wishlist.length}
               </span>
             </div>
-            <p className="text-xs font-bold text-slate-900 dark:text-white">Wishlist</p>
+            <p className="text-xs font-semibold text-slate-900 dark:text-white">Wishlist</p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
               {wishlist.length === 0 ? "0 saved items" : `${wishlist.length} saved product${wishlist.length > 1 ? "s" : ""}`}
             </p>
@@ -1523,11 +1523,11 @@ const ProfileGuestPage = () => {
               <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-900/40 group-hover:scale-110 transition-transform">
                 <Package className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               </div>
-              <span className="text-xs font-black bg-orange-500 text-white px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold bg-orange-500 text-white px-2 py-0.5 rounded-full">
                 {orders.length}
               </span>
             </div>
-            <p className="text-xs font-bold text-slate-900 dark:text-white">My Orders</p>
+            <p className="text-xs font-semibold text-slate-900 dark:text-white">My Orders</p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
               {orders.length === 0 ? "No orders" : `${orders.length} active orders`}
             </p>
@@ -1546,7 +1546,7 @@ const ProfileGuestPage = () => {
               <Heart className="w-4 h-4 fill-red-500 text-red-500" />
             </div>
             <div>
-              <span className="text-slate-900 dark:text-white font-bold">Wishlist & Favorit</span>
+              <span className="text-slate-900 dark:text-white font-semibold">Wishlist & Favorit</span>
               <p className="text-[10px] text-slate-400 font-normal">
                 {wishlist.length > 0 ? `${wishlist.length} item tersimpan` : "Lihat barang yang Anda sukai"}
               </p>
@@ -1554,7 +1554,7 @@ const ProfileGuestPage = () => {
           </div>
           <div className="flex items-center gap-2">
             {wishlist.length > 0 && (
-              <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5">
+              <span className="bg-red-500 text-white text-[10px] font-semibold rounded-full px-2 py-0.5">
                 {wishlist.length}
               </span>
             )}
@@ -1572,7 +1572,7 @@ const ProfileGuestPage = () => {
               <Package className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-slate-900 dark:text-white font-bold">My Orders</span>
+              <span className="text-slate-900 dark:text-white font-semibold">My Orders</span>
               <p className="text-[10px] text-slate-400 font-normal">Status pengiriman & riwayat belanja</p>
             </div>
           </div>
@@ -1589,7 +1589,7 @@ const ProfileGuestPage = () => {
               <Bell className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-slate-900 dark:text-white font-bold">Notifications</span>
+              <span className="text-slate-900 dark:text-white font-semibold">Notifications</span>
               <p className="text-[10px] text-slate-400 font-normal">Pemberitahuan & promo terbaru</p>
             </div>
           </div>
@@ -1605,11 +1605,11 @@ const NotificationsPage = () => {
 
   return (
     <div className="max-w-md mx-auto space-y-4 pb-12">
-      <h1 className="text-2xl font-black text-slate-900 dark:text-white">Notifications</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Notifications</h1>
       <div className="space-y-3">
         {notifications.map((n) => (
           <div key={n.id} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-1">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">{n.title}</h4>
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-white">{n.title}</h4>
             <p className="text-[11px] text-slate-500">{n.message}</p>
             <span className="text-[9px] text-slate-400">{n.time}</span>
           </div>
