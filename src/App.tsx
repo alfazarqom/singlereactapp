@@ -53,6 +53,8 @@ const MOCK_NOTIFICATIONS = [
   { id: "notif-3", title: "Cashback Received 🪙", message: "Rp 50.000 Store Credit has been added to your account wallet.", time: "1 day ago", read: true, type: "wallet" }
 ];
 
+const SHIPPING_FEE = 52000;
+
 // Helper Function: Format Rupiah
 const formatIDR = (price) => {
   return new Intl.NumberFormat("id-ID", {
@@ -649,7 +651,7 @@ const BottomActionBar = () => {
             <div>
               <p className="text-[10px] text-slate-400">Total Payable</p>
               <p className="text-base sm:text-lg font-semibold text-orange-600 leading-none">
-                {formatIDR(cartTotal)}
+                {formatIDR(cartTotal + SHIPPING_FEE)}
               </p>
             </div>
 
@@ -1292,11 +1294,11 @@ const CartPage = () => {
             </div>
             <div className="flex justify-between">
               <span>Estimated Delivery</span>
-              <span className="text-emerald-600 font-semibold">FREE</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{formatIDR(SHIPPING_FEE)}</span>
             </div>
             <div className="border-t border-slate-200 dark:border-slate-800 pt-2 flex justify-between text-sm font-semibold text-slate-900 dark:text-white">
               <span>Total Payable</span>
-              <span className="text-orange-600">{formatIDR(cartTotal)}</span>
+              <span className="text-orange-600">{formatIDR(cartTotal + SHIPPING_FEE)}</span>
             </div>
           </div>
         </div>
@@ -1373,7 +1375,11 @@ const CheckoutPage = () => {
       <div className="p-5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
         <div>
           <p className="text-[10px] text-slate-400">Total Payment</p>
-          <p className="text-xl font-semibold text-orange-400">{formatIDR(cartTotal)}</p>
+          <div className="space-y-1 text-right">
+            <p className="text-xs text-slate-400">Subtotal: {formatIDR(cartTotal)}</p>
+            <p className="text-xs text-slate-400">Shipping: {formatIDR(SHIPPING_FEE)}</p>
+            <p className="text-xl font-semibold text-orange-400">{formatIDR(cartTotal + SHIPPING_FEE)}</p>
+          </div>
         </div>
       </div>
     </div>
