@@ -277,6 +277,9 @@ const AppContext = createContext(null);
 export const AppProvider = ({ children }) => {
   const [currentPage, setCurrentPage] = useState("home");
   const [selectedProduct, setSelectedProduct] = useState(MOCK_PRODUCTS[0]);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -327,7 +330,12 @@ export const AppProvider = ({ children }) => {
   // Simulate Page Transitions with Loading Skeleton
   const navigateTo = (page, data = null) => {
     setIsLoading(true);
-    if (page === "product-detail" && data) setSelectedProduct(data);
+    if (page === "product-detail" && data) {
+      setSelectedProduct(data);
+      setSelectedColor(data.colors ? data.colors[0] : "");
+      setSelectedSize(data.sizes ? data.sizes[0] : "");
+      setSelectedQuantity(1);
+    }
     if (page === "category" && data) setSelectedCategory(data);
     if (page === "order-detail" && data) setActiveOrder(data);
 
@@ -398,6 +406,11 @@ export const AppProvider = ({ children }) => {
         currentPage,
         navigateTo,
         selectedProduct,
+        selectedColor,
+        setSelectedColor,
+        selectedSize,
+        selectedQuantity,
+        setSelectedQuantity,
         selectedCategory,
         setSelectedCategory,
         searchQuery,
@@ -698,6 +711,9 @@ const BottomActionBar = () => {
     currentPage,
     navigateTo,
     selectedProduct,
+    selectedColor,
+    selectedSize,
+    selectedQuantity,
     addToCart,
     cart,
     cartTotal,
@@ -757,7 +773,7 @@ const BottomActionBar = () => {
 
             <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
               <button
-                onClick={() => addToCart(selectedProduct, 1)}
+                onClick={() => addToCart(selectedProduct, selectedQuantity, selectedColor, selectedSize)}
                 className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-orange-500 text-orange-600 dark:text-orange-400 font-semibold text-xs hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <ShoppingCart className="w-4 h-4" />
@@ -765,7 +781,7 @@ const BottomActionBar = () => {
               </button>
               <button
                 onClick={() => {
-                  addToCart(selectedProduct, 1);
+                  addToCart(selectedProduct, selectedQuantity, selectedColor, selectedSize);
                   navigateTo("checkout");
                 }}
                 className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -1080,14 +1096,9 @@ const ProductListingPage = () => {
 
 // --- C. PRODUCT DETAIL PAGE ---
 const ProductDetailPage = () => {
-  const { selectedProduct, addToCart, navigateTo, toggleWishlist, wishlist } = useApp();
+  const { selectedProduct, navigateTo, selectedColor, setSelectedColor, selectedQuantity: qty, setSelectedQuantity: setQty } = useApp();
   const product = selectedProduct || MOCK_PRODUCTS[0];
   const [selectedImg, setSelectedImg] = useState(product.images[0]);
-  const [selectedColor, setSelectedColor] = useState(product.colors ? product.colors[0] : "");
-  const [selectedSize, setSelectedSize] = useState(product.sizes ? product.sizes[0] : "");
-  const [qty, setQty] = useState(1);
-
-  const isWishlisted = wishlist.includes(product.id);
 
   return (
     <div className="space-y-8 pb-20">
