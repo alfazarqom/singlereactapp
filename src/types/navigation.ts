@@ -1,8 +1,8 @@
-import type { ComponentType } from "react";
+import type { LucideIcon } from "lucide-react";
 
 export interface NavigationItem {
   id: string;
   label: string;
-  icon: ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   badge?: number;
 }
