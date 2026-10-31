@@ -153,3 +153,45 @@ revoke all on function public.create_guest_order(text,text,text,text,jsonb,jsonb
 revoke all on function public.release_guest_order_inventory(uuid) from public, anon, authenticated;
 grant execute on function public.create_guest_order(text,text,text,text,jsonb,jsonb) to service_role;
 grant execute on function public.release_guest_order_inventory(uuid) to service_role;
+
+-- Basic per-IP abuse control for the public guest checkout endpoint.
+create table if not exists public.guest_checkout_rate_limits (
+  ip_hash text primary key,
+  window_started_at timestamptz not null default now(),
+  request_count integer not null default 1,
+  updated_at timestamptz not null default now()
+);
+alter table public.guest_checkout_rate_limits enable row level security;
+revoke all on public.guest_checkout_rate_limits from public, anon, authenticated;
+grant all on public.guest_checkout_rate_limits to service_role;
+
+create or replace function public.consume_guest_checkout_rate_limit(p_ip_hash text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_count integer;
+begin
+  if coalesce(length(p_ip_hash), 0) <> 64 then
+    raise exception 'Invalid rate limit key' using errcode = '22023';
+  end if;
+  insert into public.guest_checkout_rate_limits(ip_hash, window_started_at, request_count, updated_at)
+  values (p_ip_hash, now(), 1, now())
+  on conflict (ip_hash) do update
+    set request_count = case
+          when guest_checkout_rate_limits.window_started_at < now() - interval '15 minutes' then 1
+          else guest_checkout_rate_limits.request_count + 1
+        end,
+        window_started_at = case
+          when guest_checkout_rate_limits.window_started_at < now() - interval '15 minutes' then now()
+          else guest_checkout_rate_limits.window_started_at
+        end,
+        updated_at = now()
+  returning request_count into v_count;
+  return v_count <= 5;
+end;
+$$;
+revoke all on function public.consume_guest_checkout_rate_limit(text) from public, anon, authenticated;
+grant execute on function public.consume_guest_checkout_rate_limit(text) to service_role;
