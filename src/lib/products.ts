@@ -6,6 +6,8 @@ export interface StoreProduct {
   brand: string;
   category: string;
   description: string;
+  sku: string;
+  currency: string;
   price: number;
   originalPrice: number;
   discount: number;
@@ -14,36 +16,53 @@ export interface StoreProduct {
   images: string[];
   colors: string[];
   sizes: string[];
+  availability: string;
+  isPurchasable: boolean;
   stock: number;
   specs: string[];
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 interface ProductRow {
   id: string;
   title: string;
   brand: string | null;
-  price: number | null;
-  sale_price: number | null;
-  currency: string;
+  price: number | string | null;
+  sale_price: number | string | null;
+  currency: string | null;
   description: string | null;
+  sku: string | null;
   category: string | null;
   availability: string | null;
-  stock_quantity: number | null;
+  stock_quantity: number | string | null;
   colors: unknown;
   sizes: unknown;
   image_url: string | null;
   additional_image_urls: unknown;
   labels: unknown;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+interface ProductsResponse {
+  success: boolean;
+  data: ProductRow[];
+  total: number;
+  error?: string;
 }
 
 function stringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
 }
 
 function mapProduct(row: ProductRow): StoreProduct {
   const basePrice = Number(row.price ?? 0);
   const salePrice = Number(row.sale_price ?? 0);
   const price = salePrice > 0 && salePrice < basePrice ? salePrice : basePrice;
+  const availability = (row.availability ?? "").trim().toLowerCase();
   const images = [row.image_url, ...stringArray(row.additional_image_urls)]
     .filter((image): image is string => typeof image === "string" && image.length > 0);
 
@@ -53,6 +72,8 @@ function mapProduct(row: ProductRow): StoreProduct {
     brand: row.brand ?? "",
     category: row.category ?? "Other",
     description: row.description ?? "",
+    sku: row.sku ?? "",
+    currency: row.currency ?? "IDR",
     price,
     originalPrice: basePrice,
     discount: basePrice > price && basePrice > 0 ? Math.round((1 - price / basePrice) * 100) : 0,
@@ -61,16 +82,24 @@ function mapProduct(row: ProductRow): StoreProduct {
     images,
     colors: stringArray(row.colors),
     sizes: stringArray(row.sizes),
-    stock: ["available", "in stock"].includes((row.availability ?? "").toLowerCase()) ? Math.max(0, Number(row.stock_quantity ?? 0)) : 0,
+    availability,
+    isPurchasable: availability === "available",
+    stock: Math.max(0, Number(row.stock_quantity ?? 0)),
     specs: stringArray(row.labels),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
 export async function fetchProducts(): Promise<StoreProduct[]> {
-  const { data, error } = await supabase
-    .from("apps_products")
-    .select("id,title,brand,price,sale_price,currency,description,category,availability,stock_quantity,colors,sizes,image_url,additional_image_urls,labels")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.functions.invoke<ProductsResponse>("get-products", {
+    method: "GET",
+  });
+
   if (error) throw new Error(error.message || "Unable to load products");
-  return ((data ?? []) as ProductRow[]).map(mapProduct);
+  if (!data?.success || !Array.isArray(data.data)) {
+    throw new Error(data?.error || "Invalid product response from server");
+  }
+
+  return data.data.map(mapProduct);
 }
