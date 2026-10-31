@@ -1,10 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://mvwflakurihhakdrlteg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_nGBEVnx4ZFHEe-ne3SzeOw_y3Lpt4nd";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-export const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+if (!supabaseUrl || !supabasePublishableKey) {
+  throw new Error(
+    "Supabase configuration is missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.",
+  );
+}
+
+// Publishable keys are intended for browser use. Never expose a Supabase secret key here.
+export const supabase = createClient(supabaseUrl, supabasePublishableKey);
