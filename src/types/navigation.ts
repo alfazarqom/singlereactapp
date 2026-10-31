@@ -1,6 +1,8 @@
+import type { ComponentType } from "react";
+
 export interface NavigationItem {
   id: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   badge?: number;
 }
