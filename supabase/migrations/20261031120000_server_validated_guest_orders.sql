@@ -64,7 +64,7 @@ begin
     end if;
 
     update public.apps_products
-      set stock_quantity = stock_quantity - v_quantity,
+      set stock_quantity = coalesce(stock_quantity, 0) - v_quantity,
           updated_at = now()
       where id = v_product.id;
 
