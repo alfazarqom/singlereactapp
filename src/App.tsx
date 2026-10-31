@@ -1211,7 +1211,7 @@ const ProductDetailPage = () => {
 
 // --- D. WISHLIST PAGE ---
 const WishlistPage = () => {
-  const { wishlist, navigateTo } = useApp();
+  const { wishlist } = useApp();
   const wishlistedProducts = MOCK_PRODUCTS.filter((p) => wishlist.includes(p.id));
 
   return (
@@ -1324,7 +1324,7 @@ const CartPage = () => {
 
 // --- F. CHECKOUT PAGE ---
 const CheckoutPage = () => {
-  const { cartTotal, cart, setOrders, orders, navigateTo } = useApp();
+  const { cartTotal } = useApp();
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -1384,8 +1384,6 @@ const CheckoutPage = () => {
 
 // --- G. ORDER SUCCESS PAGE ---
 const OrderSuccessPage = () => {
-  const { navigateTo } = useApp();
-
   return (
     <div className="max-w-md mx-auto text-center py-16 space-y-4">
       <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
