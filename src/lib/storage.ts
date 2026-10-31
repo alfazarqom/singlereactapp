@@ -19,7 +19,7 @@ export function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
-export function isCartArray(value: unknown): value is Array<{ product: { id: string }; quantity: number; selectedColor: string; selectedSize: string }> {
+export function isCartArray(value: unknown): value is any[] {
   return Array.isArray(value) && value.every((item) =>
     item !== null && typeof item === "object" &&
     (item as Record<string, unknown>).product !== null && typeof (item as Record<string, unknown>).product === "object" &&
