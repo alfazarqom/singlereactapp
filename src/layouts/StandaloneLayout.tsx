@@ -1,5 +1,5 @@
 import React from "react";
-import { useApp } from "../app/context/AppContext";
+import { useApp } from "../hooks/useApp";
 import ProductDetailPage from "../pages/ProductDetailPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import OrderSuccessPage from "../pages/OrderSuccessPage";
