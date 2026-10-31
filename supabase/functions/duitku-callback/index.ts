@@ -88,7 +88,7 @@ Deno.serve(withSupabase({ auth: "none" }, async (req, ctx) => {
       merchantOrderId.length > 50 ||
       !/^[0-9a-f]{64}$/.test(signature) ||
       !reference ||
-      !["00", "02"].includes(resultCode)
+      !["00", "01"].includes(resultCode)
     ) {
       return textResponse("Bad Request: Invalid required parameters", 400);
     }
