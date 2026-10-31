@@ -38,7 +38,7 @@ import {
   Eye
 } from "lucide-react";
 
-import { useApp } from "../../app/context/AppContext";
+import { useApp } from "../../hooks/useApp";
 import { formatIDR } from "../../utils/format";
 
 const BottomActionBar = () => {
