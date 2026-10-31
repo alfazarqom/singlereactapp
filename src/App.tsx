@@ -492,15 +492,10 @@ const ProductCard = ({ product }) => {
         </button>
       </div>
 
-      {/* Product Info: outside the media card, without padding */}
-      <div className="flex flex-1 flex-col justify-between space-y-1">
+      {/* Product Info: two-column bottom row for price and rating */}
+      <div className="flex flex-1 flex-col space-y-1">
         <div className="space-y-0.5">
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
-            <span>{product.brand}</span>
-            <span className="flex items-center gap-0.5 text-amber-500 font-semibold">
-              <Star className="w-3 h-3 fill-current" /> {product.rating}
-            </span>
-          </div>
+          <span className="text-[11px] text-slate-400 font-medium">{product.brand}</span>
           <h3
             onClick={() => navigateTo("product-detail", product)}
             className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer transition-colors"
@@ -509,18 +504,25 @@ const ProductCard = ({ product }) => {
           </h3>
         </div>
 
-        <div className="pt-1 space-y-1">
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+          <div className="min-w-0">
+            <div className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
               {formatIDR(product.price)}
-            </span>
+            </div>
             {product.originalPrice > product.price && (
-              <span className="text-[11px] text-slate-400 line-through">
+              <div className="text-[11px] text-slate-400 line-through">
                 {formatIDR(product.originalPrice)}
-              </span>
+              </div>
             )}
           </div>
-
+          <div
+            className="flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-amber-500"
+            aria-label={`Rating ${product.rating} dari 5, ${product.reviewCount} ulasan`}
+          >
+            <Star className="h-3 w-3 fill-current" />
+            <span>{product.rating}</span>
+            <span className="font-medium text-slate-400">({product.reviewCount})</span>
+          </div>
         </div>
       </div>
     </div>
