@@ -54,6 +54,8 @@ const MOCK_NOTIFICATIONS = [
 ];
 
 // Helper Function: Format Rupiah
+const SHIPPING_FEE = 52000;
+
 const formatIDR = (price) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -99,7 +101,7 @@ export const AppProvider = ({ children }) => {
         setSelectedProduct((current) => current ? items.find((item) => item.id === current.id) ?? items[0] ?? null : items[0] ?? null);
         setCart((current) => current.flatMap((entry) => {
           const product = items.find((item) => item.id === entry.product.id);
-          if (!product || product.stock <= 0) return [];
+          if (!product || !product.isPurchasable || product.stock <= 0) return [];
           return [{ ...entry, product, quantity: Math.min(entry.quantity, product.stock) }];
         }));
         setWishlist((current) => current.filter((id) => items.some((item) => item.id === id)));
@@ -157,8 +159,8 @@ export const AppProvider = ({ children }) => {
     );
     const nextQuantity = (existingItem?.quantity || 0) + quantity;
 
-    if (product.stock <= 0) {
-      triggerToast("Product is out of stock");
+    if (!product.isPurchasable || product.stock <= 0) {
+      triggerToast("Product is not available for purchase");
       return false;
     }
     if (quantity < 1 || nextQuantity > product.stock) {
@@ -212,6 +214,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const cartTotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const cartGrandTotal = cartTotal + (cart.length > 0 ? SHIPPING_FEE : 0);
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
@@ -243,6 +246,7 @@ export const AppProvider = ({ children }) => {
         updateQuantity,
         removeFromCart,
         cartTotal,
+        cartGrandTotal,
         cartCount,
         wishlist,
         toggleWishlist,
@@ -540,6 +544,7 @@ const BottomActionBar = () => {
     cart,
     setCart,
     cartTotal,
+    cartGrandTotal,
     cartCount,
     checkoutDetails,
     wishlist,
@@ -599,7 +604,7 @@ const BottomActionBar = () => {
             <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
               <button
                 onClick={() => addToCart(selectedProduct, selectedQuantity, selectedColor, selectedSize)}
-                disabled={selectedProduct.stock <= 0 || selectedQuantity > selectedProduct.stock}
+                disabled={!selectedProduct.isPurchasable || selectedProduct.stock <= 0 || selectedQuantity > selectedProduct.stock}
                 className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-orange-500 text-orange-600 dark:text-orange-400 font-semibold text-xs hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <ShoppingCart className="w-4 h-4" />
@@ -610,7 +615,7 @@ const BottomActionBar = () => {
                   const added = addToCart(selectedProduct, selectedQuantity, selectedColor, selectedSize);
                   if (added) navigateTo("checkout");
                 }}
-                disabled={selectedProduct.stock <= 0 || selectedQuantity > selectedProduct.stock}
+                disabled={!selectedProduct.isPurchasable || selectedProduct.stock <= 0 || selectedQuantity > selectedProduct.stock}
                 className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Buy Now</span>
@@ -625,7 +630,7 @@ const BottomActionBar = () => {
             <div>
               <p className="text-[10px] text-slate-400">Total ({cartCount} items)</p>
               <p className="text-base sm:text-lg font-semibold text-orange-600 leading-none">
-                {formatIDR(cartTotal)}
+                {formatIDR(cartGrandTotal)}
               </p>
             </div>
 
@@ -649,7 +654,7 @@ const BottomActionBar = () => {
             <div>
               <p className="text-[10px] text-slate-400">Total Payable</p>
               <p className="text-base sm:text-lg font-semibold text-orange-600 leading-none">
-                {formatIDR(cartTotal)}
+                {formatIDR(cartGrandTotal)}
               </p>
             </div>
 
@@ -953,6 +958,7 @@ const ProductDetailPage = () => {
 
   const isWishlisted = wishlist.includes(product.id);
   const stock = Math.max(0, Number(product.stock) || 0);
+  const canPurchase = product.isPurchasable && stock > 0;
 
   const handleShare = async () => {
     const shareData = { title: product.name, url: window.location.href };
@@ -1033,9 +1039,10 @@ const ProductDetailPage = () => {
                 <Star className="w-4 h-4 fill-current" /> {product.rating}
               </span>
               <span>({product.reviewCount} reviews)</span>
-              <span className={stock > 0 ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold"}>
-                {stock > 0 ? `In Stock · ${stock} available` : "Out of Stock"}
+              <span className={product.isPurchasable ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold"}>
+                {product.isPurchasable ? "Available for purchase" : "Not available for purchase"}
               </span>
+              <span className="text-slate-500">Stock · {stock}</span>
             </div>
           </div>
 
@@ -1108,7 +1115,7 @@ const ProductDetailPage = () => {
                 <span className="px-4 font-semibold text-xs tabular-nums">{qty}</span>
                 <button
                   onClick={() => setQty(Math.min(Math.max(stock, 1), qty + 1))}
-                  disabled={qty >= stock || stock === 0}
+                  disabled={!canPurchase || qty >= stock || stock === 0}
                   aria-label="Increase quantity"
                   className="p-1.5 text-slate-600 disabled:opacity-40"
                 >
@@ -1219,7 +1226,7 @@ const WishlistPage = () => {
 
 // --- E. CART PAGE ---
 const CartPage = () => {
-  const { cart, updateQuantity, removeFromCart, cartTotal, navigateTo } = useApp();
+  const { cart, updateQuantity, removeFromCart, cartTotal, cartGrandTotal, navigateTo } = useApp();
 
   if (cart.length === 0) {
     return (
@@ -1292,11 +1299,11 @@ const CartPage = () => {
             </div>
             <div className="flex justify-between">
               <span>Estimated Delivery</span>
-              <span className="text-emerald-600 font-semibold">FREE</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{formatIDR(SHIPPING_FEE)}</span>
             </div>
             <div className="border-t border-slate-200 dark:border-slate-800 pt-2 flex justify-between text-sm font-semibold text-slate-900 dark:text-white">
               <span>Total Payable</span>
-              <span className="text-orange-600">{formatIDR(cartTotal)}</span>
+              <span className="text-orange-600">{formatIDR(cartGrandTotal)}</span>
             </div>
           </div>
         </div>
@@ -1307,7 +1314,7 @@ const CartPage = () => {
 
 // --- F. CHECKOUT PAGE ---
 const CheckoutPage = () => {
-  const { cartTotal, checkoutDetails, setCheckoutDetails } = useApp();
+  const { cartTotal, cartGrandTotal, checkoutDetails, setCheckoutDetails } = useApp();
   const updateField = (field, value) => setCheckoutDetails((current) => ({ ...current, [field]: value }));
 
   return (
@@ -1373,7 +1380,11 @@ const CheckoutPage = () => {
       <div className="p-5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
         <div>
           <p className="text-[10px] text-slate-400">Total Payment</p>
-          <p className="text-xl font-semibold text-orange-400">{formatIDR(cartTotal)}</p>
+          <div className="space-y-1 text-xs text-slate-300">
+            <p>Subtotal: {formatIDR(cartTotal)}</p>
+            <p>Shipping: {formatIDR(SHIPPING_FEE)}</p>
+            <p className="pt-1 text-xl font-semibold text-orange-400">Total: {formatIDR(cartGrandTotal)}</p>
+          </div>
         </div>
       </div>
     </div>
