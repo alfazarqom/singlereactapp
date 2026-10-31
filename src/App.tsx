@@ -1288,7 +1288,7 @@ const ProductDetailPage = () => {
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Product Reviews</h2>
-          <button onClick={() => navigateTo("product-reviews", product)} className="text-xs text-slate-500 underline">See All</button>
+          <span className="text-xs text-slate-400 underline">See All · review page placeholder</span>
         </div>
         <div className={`${wireframePanel} flex items-center gap-4 p-4`}>
           <div className="min-w-20 text-center">
