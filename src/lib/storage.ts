@@ -18,3 +18,14 @@ export function readJsonStorage<T>(
 export function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
+
+export function isCartArray(value: unknown): value is Array<{ product: { id: string }; quantity: number; selectedColor: string; selectedSize: string }> {
+  return Array.isArray(value) && value.every((item) =>
+    item !== null && typeof item === "object" &&
+    (item as Record<string, unknown>).product !== null && typeof (item as Record<string, unknown>).product === "object" &&
+    typeof ((item as { product: Record<string, unknown> }).product).id === "string" &&
+    Number.isInteger((item as Record<string, unknown>).quantity) && Number((item as Record<string, unknown>).quantity) > 0 &&
+    typeof (item as Record<string, unknown>).selectedColor === "string" &&
+    typeof (item as Record<string, unknown>).selectedSize === "string"
+  );
+}
