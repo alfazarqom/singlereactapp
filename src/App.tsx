@@ -492,7 +492,7 @@ const ProductCard = ({ product }) => {
         </button>
       </div>
 
-      {/* Product Info: two-column bottom row for price and rating */}
+      {/* Product Info: price above, rating and review count at the bottom */}
       <div className="flex flex-1 flex-col space-y-1">
         <div className="space-y-0.5">
           <span className="text-[11px] text-slate-400 font-medium">{product.brand}</span>
@@ -504,25 +504,31 @@ const ProductCard = ({ product }) => {
           </h3>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
-          <div className="min-w-0">
-            <div className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
-              {formatIDR(product.price)}
-            </div>
-            {product.originalPrice > product.price && (
-              <div className="text-[11px] text-slate-400 line-through">
-                {formatIDR(product.originalPrice)}
-              </div>
-            )}
+        <div className="pt-1">
+          <div className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+            {formatIDR(product.price)}
           </div>
+          {product.originalPrice > product.price && (
+            <div className="text-[11px] text-slate-400 line-through">
+              {formatIDR(product.originalPrice)}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-[11px]">
           <div
-            className="flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-amber-500"
-            aria-label={`Rating ${product.rating} dari 5, ${product.reviewCount} ulasan`}
+            className="flex items-center gap-0.5 font-semibold text-amber-500"
+            aria-label={`Rating ${product.rating} dari 5`}
           >
             <Star className="h-3 w-3 fill-current" />
             <span>{product.rating}</span>
-            <span className="font-medium text-slate-400">({product.reviewCount})</span>
           </div>
+          <span
+            className="font-medium text-slate-400"
+            aria-label={`${product.reviewCount} ulasan`}
+          >
+            ({product.reviewCount})
+          </span>
         </div>
       </div>
     </div>
