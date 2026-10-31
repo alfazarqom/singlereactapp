@@ -38,7 +38,7 @@ import {
   Eye
 } from "lucide-react";
 
-import { useApp } from "../../app/context/AppContext";
+import { useApp } from "../../hooks/useApp";
 
 const ProductCard = ({ product }) => {
   const { navigateTo, wishlist, toggleWishlist } = useApp();
