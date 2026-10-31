@@ -464,7 +464,7 @@ const ProductCard = ({ product }) => {
   const isWishlisted = wishlist.includes(product.id);
 
   return (
-    <div className="group flex flex-col gap-2">
+    <div className="group flex flex-col gap-0.5">
       {/* Product Media */}
       <div className="relative aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer" onClick={() => navigateTo("product-detail", product)}>
         <img
