@@ -210,6 +210,7 @@ Deno.serve(async (req) => {
       amount: providerData.amount || String(paymentAmount),
       statusCode: providerData.statusCode,
       statusMessage: providerData.statusMessage || "SUCCESS",
+      environment: duitkuEnv,
     });
   } catch (error) {
     console.error("[create-invoice] Unexpected error:", error instanceof Error ? error.message : "Unknown error");
