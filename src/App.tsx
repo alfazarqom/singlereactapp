@@ -531,9 +531,44 @@ const ProductCard = ({ product }) => {
 // HEADER & NAVIGATION COMPONENTS
 // ==========================================
 
+const STANDALONE_PAGES = [
+  "product-detail",
+  "checkout",
+  "order-success",
+  "wishlist",
+  "cart",
+  "orders",
+  "notifications"
+];
+
 const Header = () => {
-  const { navigateTo, cartCount, wishlist, searchQuery, setSearchQuery, notifications } = useApp();
+  const { navigateTo, cartCount, notifications, currentPage } = useApp();
   const unreadNotifs = notifications.filter((n) => !n.read).length;
+  const isStandalone = STANDALONE_PAGES.includes(currentPage);
+
+  const handleBack = () => {
+    switch (currentPage) {
+      case "checkout":
+        navigateTo("cart");
+        break;
+      case "product-detail":
+        navigateTo("products");
+        break;
+      case "cart":
+        navigateTo("home");
+        break;
+      case "wishlist":
+      case "orders":
+      case "notifications":
+        navigateTo("profile");
+        break;
+      case "order-success":
+        navigateTo("home");
+        break;
+      default:
+        navigateTo("home");
+    }
+  };
 
   return (
     <header className="flex-shrink-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
@@ -545,48 +580,33 @@ const Header = () => {
 
       {/* Main Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 sm:gap-6">
-        {/* Logo */}
-        <button
-          onClick={() => navigateTo("home")}
-          className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2"
-        >
-          <div className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-orange-500/30">
-            S
-          </div>
-          <span className="hidden sm:inline">Storefront<span className="text-orange-500">.</span></span>
-        </button>
+        {/* Left Side: Back button (on standalone pages) & Logo */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {isStandalone && (
+            <button
+              onClick={handleBack}
+              className="p-2 -ml-1 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer"
+              aria-label="Back"
+              title="Go Back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
 
-        {/* Search Input Bar */}
-        <div className="flex-1 max-w-md relative">
-          <input
-            type="text"
-            placeholder="Search products, brands, categories..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") navigateTo("search");
-            }}
-            className="w-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 pl-10 pr-4 py-2 rounded-full text-xs sm:text-sm border border-transparent focus:border-orange-500 focus:bg-white dark:focus:bg-slate-900 outline-none transition-all shadow-inner"
-          />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+          {/* Logo */}
+          <button
+            onClick={() => navigateTo("home")}
+            className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2 cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-orange-500/30">
+              S
+            </div>
+            <span className="text-slate-900 dark:text-white">Storefront<span className="text-orange-500">.</span></span>
+          </button>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Wishlist Icon */}
-          <button
-            onClick={() => navigateTo("wishlist")}
-            className="relative p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
-            aria-label="Wishlist"
-          >
-            <Heart className="w-5 h-5" />
-            {wishlist.length > 0 && (
-              <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                {wishlist.length}
-              </span>
-            )}
-          </button>
-
           {/* Notifications Icon */}
           <button
             onClick={() => navigateTo("notifications")}
@@ -667,6 +687,211 @@ const BottomNavigation = () => {
         })}
       </div>
     </nav>
+  );
+};
+
+const BottomActionBar = () => {
+  const {
+    currentPage,
+    navigateTo,
+    selectedProduct,
+    addToCart,
+    cart,
+    cartTotal,
+    cartCount,
+    wishlist,
+    toggleWishlist,
+    orders,
+    setOrders,
+    triggerToast
+  } = useApp();
+
+  const isWishlisted = selectedProduct ? wishlist.includes(selectedProduct.id) : false;
+
+  const handleCompleteOrder = () => {
+    if (cart.length === 0) {
+      triggerToast("Cart is empty");
+      navigateTo("products");
+      return;
+    }
+    const newOrd = {
+      id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
+      date: new Date().toISOString().split("T")[0],
+      status: "Processing",
+      total: cartTotal,
+      items: [...cart],
+      trackingNumber: "JNE-8821903",
+      address: "Jl. Jend. Sudirman No. 45, Jakarta Selatan"
+    };
+    setOrders([newOrd, ...orders]);
+    navigateTo("order-success");
+  };
+
+  return (
+    <aside className="flex-shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800 py-3 px-4 shadow-xl z-30">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+        {currentPage === "product-detail" && selectedProduct && (
+          <div className="w-full flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => toggleWishlist(selectedProduct.id)}
+                className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${
+                  isWishlisted
+                    ? "bg-red-500 text-white border-red-500"
+                    : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+                title="Wishlist"
+              >
+                <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
+              </button>
+              <div>
+                <p className="text-[10px] text-slate-400">Total Price</p>
+                <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-none">
+                  {formatIDR(selectedProduct.price)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+              <button
+                onClick={() => addToCart(selectedProduct, 1)}
+                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-orange-500 text-orange-600 dark:text-orange-400 font-bold text-xs hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span>+ Cart</span>
+              </button>
+              <button
+                onClick={() => {
+                  addToCart(selectedProduct, 1);
+                  navigateTo("checkout");
+                }}
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Buy Now</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {currentPage === "cart" && (
+          <div className="w-full flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] text-slate-400">Total ({cartCount} items)</p>
+              <p className="text-base sm:text-lg font-black text-orange-600 leading-none">
+                {formatIDR(cartTotal)}
+              </p>
+            </div>
+
+            <button
+              onClick={() => navigateTo("checkout")}
+              disabled={cart.length === 0}
+              className={`px-7 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+                cart.length > 0
+                  ? "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/25 cursor-pointer"
+                  : "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+              }`}
+            >
+              <span>Proceed to Checkout</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {currentPage === "checkout" && (
+          <div className="w-full flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] text-slate-400">Total Payable</p>
+              <p className="text-base sm:text-lg font-black text-orange-600 leading-none">
+                {formatIDR(cartTotal)}
+              </p>
+            </div>
+
+            <button
+              onClick={handleCompleteOrder}
+              className="px-7 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Place Order</span>
+              <Check className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {currentPage === "wishlist" && (
+          <div className="w-full flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] text-slate-400">My Wishlist</p>
+              <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                {wishlist.length} saved item{wishlist.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <button
+              onClick={() => navigateTo("products")}
+              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span>Explore Products</span>
+            </button>
+          </div>
+        )}
+
+        {currentPage === "orders" && (
+          <div className="w-full flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] text-slate-400">Order History</p>
+              <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                {orders.length} Order{orders.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <button
+              onClick={() => navigateTo("products")}
+              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span>Continue Shopping</span>
+            </button>
+          </div>
+        )}
+
+        {currentPage === "notifications" && (
+          <div className="w-full flex items-center justify-between gap-3">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Stay tuned for promo & order alerts
+            </p>
+
+            <button
+              onClick={() => navigateTo("products")}
+              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Explore Deals</span>
+            </button>
+          </div>
+        )}
+
+        {currentPage === "order-success" && (
+          <div className="w-full flex items-center justify-between gap-3">
+            <button
+              onClick={() => navigateTo("orders")}
+              className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Package className="w-4 h-4 text-orange-500" />
+              <span>My Orders</span>
+            </button>
+
+            <button
+              onClick={() => navigateTo("products")}
+              className="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span>Shop More</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </aside>
   );
 };
 
@@ -1255,11 +1480,11 @@ const OrdersPage = () => {
 
 // --- I. PROFILE & NOTIFICATIONS PAGES ---
 const ProfileGuestPage = () => {
-  const { navigateTo } = useApp();
+  const { navigateTo, wishlist, orders } = useApp();
 
   return (
     <div className="max-w-md mx-auto space-y-6 pb-12">
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center space-y-3">
+      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center space-y-4">
         <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full mx-auto flex items-center justify-center">
           <User className="w-9 h-9 text-slate-400" />
         </div>
@@ -1267,17 +1492,108 @@ const ProfileGuestPage = () => {
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Guest Profile</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">You are currently browsing as a guest.</p>
         </div>
+
+        {/* Quick Shortcut Buttons in Profile */}
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          {/* Wishlist Button Card */}
+          <button
+            onClick={() => navigateTo("wishlist")}
+            className="p-3.5 bg-red-50/70 hover:bg-red-100/70 dark:bg-red-950/30 dark:hover:bg-red-950/50 rounded-2xl border border-red-200/60 dark:border-red-900/40 text-left transition-all group"
+          >
+            <div className="flex items-center justify-between text-red-600 dark:text-red-400 mb-1.5">
+              <div className="p-2 rounded-xl bg-red-100 dark:bg-red-900/40 group-hover:scale-110 transition-transform">
+                <Heart className="w-4 h-4 fill-red-500 text-red-500" />
+              </div>
+              <span className="text-xs font-black bg-red-500 text-white px-2 py-0.5 rounded-full">
+                {wishlist.length}
+              </span>
+            </div>
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Wishlist</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              {wishlist.length === 0 ? "0 saved items" : `${wishlist.length} saved product${wishlist.length > 1 ? "s" : ""}`}
+            </p>
+          </button>
+
+          {/* Orders Button Card */}
+          <button
+            onClick={() => navigateTo("orders")}
+            className="p-3.5 bg-orange-50/70 hover:bg-orange-100/70 dark:bg-orange-950/30 dark:hover:bg-orange-950/50 rounded-2xl border border-orange-200/60 dark:border-orange-900/40 text-left transition-all group"
+          >
+            <div className="flex items-center justify-between text-orange-600 dark:text-orange-400 mb-1.5">
+              <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-900/40 group-hover:scale-110 transition-transform">
+                <Package className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              </div>
+              <span className="text-xs font-black bg-orange-500 text-white px-2 py-0.5 rounded-full">
+                {orders.length}
+              </span>
+            </div>
+            <p className="text-xs font-bold text-slate-900 dark:text-white">My Orders</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              {orders.length === 0 ? "No orders" : `${orders.length} active orders`}
+            </p>
+          </button>
+        </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold">
-        <button onClick={() => navigateTo("orders")} className="w-full p-4 text-left flex items-center justify-between">
-          <span>My Orders</span> <ChevronRight className="w-4 h-4 text-slate-400" />
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold overflow-hidden">
+        {/* Wishlist Menu Row */}
+        <button
+          onClick={() => navigateTo("wishlist")}
+          className="w-full p-4 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-500 flex items-center justify-center">
+              <Heart className="w-4 h-4 fill-red-500 text-red-500" />
+            </div>
+            <div>
+              <span className="text-slate-900 dark:text-white font-bold">Wishlist & Favorit</span>
+              <p className="text-[10px] text-slate-400 font-normal">
+                {wishlist.length > 0 ? `${wishlist.length} item tersimpan` : "Lihat barang yang Anda sukai"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {wishlist.length > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5">
+                {wishlist.length}
+              </span>
+            )}
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+          </div>
         </button>
-        <button onClick={() => navigateTo("wishlist")} className="w-full p-4 text-left flex items-center justify-between">
-          <span>Saved Wishlist</span> <ChevronRight className="w-4 h-4 text-slate-400" />
+
+        {/* My Orders Menu Row */}
+        <button
+          onClick={() => navigateTo("orders")}
+          className="w-full p-4 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-500 flex items-center justify-center">
+              <Package className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-slate-900 dark:text-white font-bold">My Orders</span>
+              <p className="text-[10px] text-slate-400 font-normal">Status pengiriman & riwayat belanja</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
         </button>
-        <button onClick={() => navigateTo("notifications")} className="w-full p-4 text-left flex items-center justify-between">
-          <span>Notifications</span> <ChevronRight className="w-4 h-4 text-slate-400" />
+
+        {/* Notifications Menu Row */}
+        <button
+          onClick={() => navigateTo("notifications")}
+          className="w-full p-4 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+              <Bell className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-slate-900 dark:text-white font-bold">Notifications</span>
+              <p className="text-[10px] text-slate-400 font-normal">Pemberitahuan & promo terbaru</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
     </div>
@@ -1407,18 +1723,19 @@ const MainContent = () => {
 // ==========================================
 
 const AppShell = () => {
-  const { toastMessage } = useApp();
+  const { toastMessage, currentPage } = useApp();
+  const isStandalone = STANDALONE_PAGES.includes(currentPage);
 
   return (
     <div className="h-[100dvh] w-full flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <Header />
       <MainContent />
       <StandalonePage />
-      <BottomNavigation />
+      {isStandalone ? <BottomActionBar /> : <BottomNavigation />}
 
       {/* Global Toast */}
       {toastMessage && (
-        <div className="fixed bottom-16 right-4 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-20 right-4 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
           <span>{toastMessage}</span>
         </div>
       )}
