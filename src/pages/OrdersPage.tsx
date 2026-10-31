@@ -38,7 +38,7 @@ import {
   Eye
 } from "lucide-react";
 
-import { useApp } from "../app/context/AppContext";
+import { useApp } from "../hooks/useApp";
 import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "../data/mockData";
 import { formatIDR } from "../utils/format";
 
