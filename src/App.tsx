@@ -508,32 +508,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsDbLive(true);
       }
 
-      // 3. Fetch Orders from Supabase
-      const { data: orderData, error: orderErr } = await supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!orderErr && orderData && orderData.length > 0) {
-        const mappedOrders: Order[] = orderData.map((ord: any) => ({
-          id: ord.merchant_order_id || ord.id,
-          merchantOrderId: ord.merchant_order_id || ord.id,
-          date: ord.created_at ? ord.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
-          status: ord.payment_status || "PENDING",
-          total: Number(ord.total_amount),
-          items: Array.isArray(ord.items) ? ord.items : [],
-          customerName: ord.customer_name,
-          customerEmail: ord.customer_email,
-          customerPhone: ord.customer_phone,
-          customerAddress: ord.customer_address,
-          duitkuReference: ord.duitku_reference,
-          duitkuPaymentUrl: ord.duitku_payment_url,
-          duitkuVaNumber: ord.duitku_va_number,
-          paymentMethod: ord.payment_method || "Duitku POP"
-        }));
-        setOrders(mappedOrders);
-      }
-    } catch (e) {
+      // Guest order history is not fetched publicly; order reads are restricted by RLS.\n    } catch (e) {
       console.warn("[AppProvider] Supabase query note:", e);
     } finally {
       setIsDataLoading(false);
@@ -707,10 +682,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         items: cart
       };
 
-      try {
-        await supabase.from("orders").insert(newOrderPayload);
-      } catch (insertErr) {
-        console.warn("[Checkout] Supabase orders table insert warning:", insertErr);
+      const { error: orderInsertError } = await supabase.from("orders").insert(newOrderPayload);
+      if (orderInsertError) {
+        console.error("[Checkout] Order insert failed:", orderInsertError.message);
+        throw new Error("Pesanan gagal disimpan. Silakan coba kembali.");
       }
 
       // 2. Request Invoice from Duitku Inquiry API via Supabase Edge Function 'create-invoice'
@@ -750,34 +725,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 3. Trigger Official Duitku POP checkout.process(reference, options)
       await processDuitkuPayment(invoiceData.reference, {
-        onSuccess: async (result) => {
-          console.log("[Duitku POP] Payment Success:", result);
+        onSuccess: (result) => {
+          console.log("[Duitku POP] Browser success event received; awaiting backend callback:", result);
           setIsPaymentProcessing(false);
-
-          // Update Supabase Database
-          try {
-            await supabase
-              .from("orders")
-              .update({
-                payment_status: "PAID",
-                updated_at: new Date().toISOString()
-              })
-              .eq("merchant_order_id", merchantOrderId);
-          } catch (e) {
-            console.warn("[Duitku POP] Database update note:", e);
-          }
-
-          // Update local state
-          setOrders((prev) =>
-            prev.map((ord) => (ord.merchantOrderId === merchantOrderId ? { ...ord, status: "PAID" } : ord))
-          );
-          setActiveOrder((prev) =>
-            prev && prev.merchantOrderId === merchantOrderId ? { ...prev, status: "PAID" } : prev
-          );
-          setCart([]);
-          localStorage.removeItem("mystore_cart");
-          triggerToast("Pembayaran berhasil dikonfirmasi! Pesanan Anda diproses.");
-          navigateTo("order-success");
+          triggerToast("Pembayaran diterima. Status menunggu verifikasi server Duitku.");
+          navigateTo("orders");
         },
 
         onPending: async (result) => {
@@ -2132,17 +2084,8 @@ const OrdersPage: React.FC = () => {
     }
 
     processDuitkuPayment(ord.duitkuReference, {
-      onSuccess: async () => {
-        try {
-          await supabase
-            .from("orders")
-            .update({ payment_status: "PAID" })
-            .eq("merchant_order_id", ord.merchantOrderId);
-        } catch {}
-        setOrders((prev) =>
-          prev.map((o) => (o.merchantOrderId === ord.merchantOrderId ? { ...o, status: "PAID" } : o))
-        );
-        triggerToast("Pembayaran berhasil dikonfirmasi!");
+      onSuccess: () => {
+        triggerToast("Pembayaran diterima. Status akan diperbarui setelah verifikasi server Duitku.");
       },
       onPending: () => triggerToast("Menunggu konfirmasi pembayaran."),
       onError: () => triggerToast("Pembayaran dibatalkan."),
