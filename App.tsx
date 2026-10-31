@@ -964,14 +964,8 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={() => addToCart(product, qty, selectedColor, selectedSize)}
-              className="flex-1 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
-            >
-              <ShoppingCart className="w-4 h-4" /> Add to Shopping Cart
-            </button>
+          {/* Secondary Action */}
+          <div className="flex justify-end pt-4">
             <button
               onClick={() => toggleWishlist(product.id)}
               className={`p-3.5 rounded-xl border transition-all ${
@@ -979,6 +973,7 @@ const ProductDetailPage = () => {
                   ? "bg-red-500 text-white border-red-500"
                   : "border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-100"
               }`}
+              aria-label="Toggle wishlist"
             >
               <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
             </button>
@@ -1307,6 +1302,12 @@ const NotificationsPage = () => {
 // STANDALONE PAGE CONTROLLER
 // ==========================================
 
+const BottomActionBar = ({ children }) => (
+  <div className="flex-shrink-0 border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 sm:px-6">
+    <div className="max-w-7xl w-full mx-auto">{children}</div>
+  </div>
+);
+
 const StandalonePage = () => {
   const { currentPage, isLoading } = useApp();
 
@@ -1342,9 +1343,24 @@ const StandalonePage = () => {
   if (!page) return null;
 
   return (
-    <main id="main-content-area" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-      {page}
-    </main>
+    <div className="flex-1 min-h-0 flex flex-col">
+      <main id="main-content-area" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        {page}
+      </main>
+      {currentPage === "product-detail" && (
+        <BottomActionBar>
+          <button
+            onClick={() => {
+              const productDetailButton = document.querySelector("[data-product-detail-add]");
+              productDetailButton?.click();
+            }}
+            className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+          >
+            <ShoppingCart className="w-4 h-4" /> Add to Shopping Cart
+          </button>
+        </BottomActionBar>
+      )}
+    </div>
   );
 };
 
@@ -1407,14 +1423,19 @@ const MainContent = () => {
 // ==========================================
 
 const AppShell = () => {
-  const { toastMessage } = useApp();
+  const { toastMessage, currentPage } = useApp();
 
   return (
     <div className="h-[100dvh] w-full flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <Header />
-      <MainContent />
-      <StandalonePage />
-      <BottomNavigation />
+      {["product-detail", "checkout", "order-success", "wishlist", "cart", "orders", "notifications"].includes(currentPage) ? (
+        <StandalonePage />
+      ) : (
+        <>
+          <MainContent />
+          <BottomNavigation />
+        </>
+      )}
 
       {/* Global Toast */}
       {toastMessage && (
