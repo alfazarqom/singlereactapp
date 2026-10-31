@@ -958,10 +958,8 @@ const ProductDetailPage = () => {
       } else {
         throw new Error("Sharing is unavailable");
       }
-    } catch (error) {
-      if (error?.name !== "AbortError") {
-        // Keep the page usable when browser sharing is unavailable or dismissed.
-      }
+    } catch {
+      // Keep the page usable when browser sharing is unavailable or dismissed.
     }
   };
 
