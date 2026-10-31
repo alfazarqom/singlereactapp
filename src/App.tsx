@@ -1192,25 +1192,6 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={() => addToCart(product, qty, selectedColor, selectedSize)}
-              className="flex-1 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
-            >
-              <ShoppingCart className="w-4 h-4" /> Add to Shopping Cart
-            </button>
-            <button
-              onClick={() => toggleWishlist(product.id)}
-              className={`p-3.5 rounded-xl border transition-all ${
-                isWishlisted
-                  ? "bg-red-500 text-white border-red-500"
-                  : "border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -1230,12 +1211,6 @@ const WishlistPage = () => {
         <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 space-y-3">
           <Heart className="w-12 h-12 text-slate-300 mx-auto" />
           <p className="text-sm text-slate-500">Your wishlist is currently empty.</p>
-          <button
-            onClick={() => navigateTo("products")}
-            className="px-5 py-2.5 bg-orange-500 text-white font-semibold rounded-xl text-xs"
-          >
-            Explore Catalog
-          </button>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -1330,12 +1305,6 @@ const CartPage = () => {
               <span className="text-orange-600">{formatIDR(cartTotal)}</span>
             </div>
           </div>
-          <button
-            onClick={() => navigateTo("checkout")}
-            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs shadow-lg shadow-orange-500/20"
-          >
-            Proceed to Checkout
-          </button>
         </div>
       </div>
     </div>
@@ -1345,20 +1314,6 @@ const CartPage = () => {
 // --- F. CHECKOUT PAGE ---
 const CheckoutPage = () => {
   const { cartTotal, cart, setOrders, orders, navigateTo } = useApp();
-
-  const handleCompleteOrder = () => {
-    const newOrd = {
-      id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
-      date: new Date().toISOString().split("T")[0],
-      status: "Processing",
-      total: cartTotal,
-      items: [...cart],
-      trackingNumber: "JNE-8821903",
-      address: "Jl. Jend. Sudirman No. 45, Jakarta Selatan"
-    };
-    setOrders([newOrd, ...orders]);
-    navigateTo("order-success");
-  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -1411,12 +1366,6 @@ const CheckoutPage = () => {
           <p className="text-[10px] text-slate-400">Total Payment</p>
           <p className="text-xl font-semibold text-orange-400">{formatIDR(cartTotal)}</p>
         </div>
-        <button
-          onClick={handleCompleteOrder}
-          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs shadow-lg shadow-orange-500/30"
-        >
-          Place Order
-        </button>
       </div>
     </div>
   );
@@ -1433,20 +1382,6 @@ const OrderSuccessPage = () => {
       </div>
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Order Successful!</h1>
       <p className="text-xs text-slate-500">Thank you for your purchase. We are preparing your shipment.</p>
-      <div className="pt-4 flex flex-col gap-2">
-        <button
-          onClick={() => navigateTo("orders")}
-          className="w-full py-3 bg-orange-500 text-white font-semibold rounded-xl text-xs"
-        >
-          View My Orders
-        </button>
-        <button
-          onClick={() => navigateTo("products")}
-          className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs"
-        >
-          Continue Shopping
-        </button>
-      </div>
     </div>
   );
 };
