@@ -45,16 +45,7 @@ import {
 // TYPES & INTERFACES (JS Mock Definitions)
 // ==========================================
 
-const MOCK_CATEGORIES = [
-  { id: "cat-1", name: "Fashion", slug: "fashion", icon: "Shirt", banner: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=1200" },
-  { id: "cat-2", name: "Electronics", slug: "electronics", icon: "Smartphone", banner: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=1200" },
-  { id: "cat-3", name: "Beauty", slug: "beauty", icon: "Sparkles", banner: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=1200" },
-  { id: "cat-4", name: "Home & Living", slug: "home-living", icon: "Home", banner: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=1200" },
-  { id: "cat-5", name: "Sports", slug: "sports", icon: "Activity", banner: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" },
-  { id: "cat-6", name: "Accessories", slug: "accessories", icon: "Watch", banner: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200" }
-];
-
-const products: StoreProduct[] = [];
+// Categories are derived from live product records.
 
 const MOCK_NOTIFICATIONS = [
   { id: "notif-1", title: "Flash Sale Alert! ⚡", message: "Up to 50% discount on Electronics ending tonight at 23:59 WIB.", time: "10 mins ago", read: false, type: "promo" },
@@ -750,6 +741,7 @@ const BottomActionBar = () => {
 // --- A. HOME PAGE ---
 const HomePage = () => {
   const { navigateTo, setSelectedCategory, products, isProductsLoading, productLoadError } = useApp();
+  const categories = [...new Set(products.map((product) => product.category))].map((name) => ({ name, banner: products.find((product) => product.category === name)?.images[0] ?? '' }));
 
   return (
     <div className="space-y-10 pb-12">
@@ -786,7 +778,7 @@ const HomePage = () => {
           </button>
         </div>
         <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none">
-          {MOCK_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => {
@@ -849,9 +841,9 @@ const HomePage = () => {
           </button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.slice(0, 4).map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+          {productLoadError ? <p className="col-span-full text-sm text-red-600">{productLoadError}</p> :
+            isProductsLoading ? <ProductGridSkeleton count={4} /> :
+            products.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       </div>
     </div>
@@ -899,7 +891,11 @@ const ProductListingPage = () => {
       </div>
 
       {/* Grid Content */}
-      {filtered.length === 0 ? (
+      {productLoadError ? (
+        <div role="alert" className="text-center py-16 text-sm text-red-600">{productLoadError}</div>
+      ) : isProductsLoading ? (
+        <ProductGridSkeleton count={8} />
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 space-y-3">
           <p className="text-sm text-slate-500">No products found matching filters.</p>
           <button
