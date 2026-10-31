@@ -61,16 +61,16 @@ function mapProduct(row: ProductRow): StoreProduct {
     images,
     colors: stringArray(row.colors),
     sizes: stringArray(row.sizes),
-    stock: Math.max(0, Number(row.stock_quantity ?? 0)),
+    stock: ["available", "in stock"].includes((row.availability ?? "").toLowerCase()) ? Math.max(0, Number(row.stock_quantity ?? 0)) : 0,
     specs: stringArray(row.labels),
   };
 }
 
 export async function fetchProducts(): Promise<StoreProduct[]> {
-  const { data, error } = await supabase.functions.invoke("get-products", { method: "GET" });
+  const { data, error } = await supabase
+    .from("apps_products")
+    .select("id,title,brand,price,sale_price,currency,description,category,availability,stock_quantity,colors,sizes,image_url,additional_image_urls,labels")
+    .order("created_at", { ascending: false });
   if (error) throw new Error(error.message || "Unable to load products");
-  if (!data?.success || !Array.isArray(data.data)) {
-    throw new Error("Invalid product response from backend");
-  }
-  return (data.data as ProductRow[]).map(mapProduct);
+  return ((data ?? []) as ProductRow[]).map(mapProduct);
 }
