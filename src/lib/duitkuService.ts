@@ -1,12 +1,12 @@
 /**
- * Official Duitku POP Payment Gateway Service
- * Reference: Duitku POP Integration Documentation
- * https://docs.duitku.com / POP Documentation
+ * Duitku POP browser integration.
+ *
+ * Invoice creation is performed by the server-side Supabase Edge Function.
+ * Browser callbacks are informational only; payment status is authoritative
+ * only after the verified HTTP callback updates the order on the backend.
  */
-
 import { supabase } from "./supabaseClient";
 
-// Declare global window checkout object injected by Duitku script
 declare global {
   interface Window {
     checkout?: {
@@ -49,100 +49,79 @@ export interface DuitkuInvoiceResponse {
   paymentUrl?: string;
   vaNumber?: string;
   amount?: string;
-  statusCode?: string;
+  statusCode: string;
   statusMessage?: string;
+  environment: "sandbox" | "production";
 }
 
-/**
- * Loads the official Duitku POP Javascript SDK if not already present.
- */
+/** Load the official Duitku POP JavaScript SDK. */
 export async function loadDuitkuScript(isProduction = false): Promise<void> {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    throw new Error("Duitku POP hanya dapat dijalankan di browser.");
+  }
 
   const scriptId = "duitku-pop-script";
-  const existingScript = document.getElementById(scriptId);
-
   const scriptUrl = isProduction
     ? "https://app-prod.duitku.com/lib/js/duitku.js"
     : "https://app-sandbox.duitku.com/lib/js/duitku.js";
+  const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
 
-  if (existingScript && window.checkout) {
-    return Promise.resolve();
-  }
+  if (existingScript && window.checkout?.process) return;
 
-  return new Promise((resolve, reject) => {
-    if (existingScript) {
-      existingScript.remove();
-    }
+  if (existingScript) existingScript.remove();
 
+  await new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
     script.id = scriptId;
     script.src = scriptUrl;
     script.async = true;
-    script.onload = () => {
-      console.log(`[Duitku] POP script loaded successfully (${isProduction ? "Production" : "Sandbox"})`);
-      resolve();
-    };
-    script.onerror = (err) => {
-      console.error("[Duitku] Failed to load Duitku POP script:", err);
-      reject(new Error("Gagal memuat sistem pembayaran Duitku. Silakan periksa koneksi internet Anda."));
+    script.onload = () => resolve();
+    script.onerror = () => {
+      script.remove();
+      reject(new Error("Gagal memuat Duitku POP. Periksa koneksi dan konfigurasi CSP."));
     };
     document.head.appendChild(script);
   });
+
+  if (!window.checkout || typeof window.checkout.process !== "function") {
+    throw new Error("SDK Duitku POP termuat tetapi checkout.process tidak tersedia.");
+  }
 }
 
 /**
- * Creates an invoice on Duitku via Supabase Edge Function 'create-invoice'.
- * If the Edge Function is not yet deployed, provides a seamless demo reference
- * and updates Supabase orders accordingly.
+ * Create a real Duitku invoice through the repository's Edge Function.
+ * Any transport/provider error is surfaced; no mock reference is generated.
  */
 export async function createDuitkuInvoice(
   request: CreateInvoiceRequest
 ): Promise<DuitkuInvoiceResponse> {
-  try {
-    // 1. Invoke Supabase Edge Function 'create-invoice'
-    const { data, error } = await supabase.functions.invoke("create-invoice", {
-      body: request,
-    });
+  const { data, error } = await supabase.functions.invoke("create-invoice", {
+    body: request,
+  });
 
-    if (!error && data && data.reference) {
-      return data as DuitkuInvoiceResponse;
-    }
-
-    if (error) {
-      console.warn("[Duitku] Supabase Edge Function returned error or is unprovisioned, using fallback response:", error);
-    }
-  } catch (err) {
-    console.warn("[Duitku] Error calling Edge Function:", err);
+  if (error) {
+    console.error("[Duitku] Invoice Edge Function failed:", error);
+    throw new Error("Gagal membuat invoice Duitku. Silakan coba kembali.");
   }
 
-  // Fallback for client-side or sandbox environments before edge function deployment:
-  // Generate a valid reference format according to Duitku POP specs (e.g. D12345xxx)
-  const mockReference = `REF-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-  
-  // Persist order update with reference in Supabase
-  try {
-    await supabase
-      .from("orders")
-      .update({
-        duitku_reference: mockReference,
-        duitku_payment_url: `https://sandbox.duitku.com/payment/${mockReference}`
-      })
-      .eq("merchant_order_id", request.merchantOrderId);
-  } catch (e) {
-    console.warn("[Duitku] Order update fallback note:", e);
+  if (!data || data.statusCode !== "00" || typeof data.reference !== "string" || !data.reference) {
+    throw new Error(data?.statusMessage || "Duitku tidak mengembalikan invoice yang valid.");
   }
 
-  return {
-    reference: mockReference,
-    statusCode: "00",
-    statusMessage: "SUCCESS",
-    paymentUrl: `https://sandbox.duitku.com/payment/${mockReference}`
-  };
+  const clientEnvironment = import.meta.env.VITE_DUITKU_ENV;
+  if (clientEnvironment !== "sandbox" && clientEnvironment !== "production") {
+    throw new Error("VITE_DUITKU_ENV harus diatur ke sandbox atau production.");
+  }
+  if (data.environment !== clientEnvironment) {
+    throw new Error("Environment Duitku frontend dan backend tidak cocok.");
+  }
+
+  return data as DuitkuInvoiceResponse;
 }
 
 /**
- * Triggers Duitku POP modal window using checkout.process(reference, options).
+ * Open the real POP modal. Success/pending/error/close events are UI signals,
+ * not payment confirmation. The backend callback remains authoritative.
  */
 export async function processDuitkuPayment(
   reference: string,
@@ -153,41 +132,26 @@ export async function processDuitkuPayment(
     onClose?: (result: any) => void;
   }
 ): Promise<void> {
-  // Ensure script is loaded
-  await loadDuitkuScript(false);
+  if (!reference) throw new Error("Referensi pembayaran Duitku tidak tersedia.");
 
-  if (typeof window === "undefined" || !window.checkout || typeof window.checkout.process !== "function") {
-    console.warn("[Duitku] window.checkout.process is not available, falling back to simulated modal");
-    // Show standard simulated Duitku POP experience if script is blocked by CSP or adblock
-    const confirmed = window.confirm(
-      `[DUITKU POP MODAL]\n\nReference: ${reference}\nKlik OK untuk menyelesaikan pembayaran sukses, atau Batal untuk pending.`
-    );
-    if (confirmed) {
-      callbacks.onSuccess?.({ reference, status: "00", message: "Success" });
-    } else {
-      callbacks.onPending?.({ reference, status: "01", message: "Pending" });
-    }
-    return;
+  const environment = import.meta.env.VITE_DUITKU_ENV;
+  if (environment !== "sandbox" && environment !== "production") {
+    throw new Error("VITE_DUITKU_ENV harus diatur ke sandbox atau production.");
+  }
+  await loadDuitkuScript(environment === "production");
+
+  if (!window.checkout?.process) {
+    throw new Error("Duitku POP tidak tersedia. Pembayaran tidak dapat dilanjutkan.");
   }
 
-  console.log(`[Duitku] Invoking checkout.process with reference: ${reference}`);
   window.checkout.process(reference, {
     defaultLanguage: "id",
-    successEvent: function (result: any) {
-      console.log("[Duitku POP] successEvent:", result);
+    successEvent: (result: any) => {
+      console.info("[Duitku POP] Browser success event received; awaiting server verification.");
       callbacks.onSuccess?.(result);
     },
-    pendingEvent: function (result: any) {
-      console.log("[Duitku POP] pendingEvent:", result);
-      callbacks.onPending?.(result);
-    },
-    errorEvent: function (result: any) {
-      console.error("[Duitku POP] errorEvent:", result);
-      callbacks.onError?.(result);
-    },
-    closeEvent: function (result: any) {
-      console.log("[Duitku POP] Customer closed the payment modal:", result);
-      callbacks.onClose?.(result);
-    }
+    pendingEvent: (result: any) => callbacks.onPending?.(result),
+    errorEvent: (result: any) => callbacks.onError?.(result),
+    closeEvent: (result: any) => callbacks.onClose?.(result),
   });
 }

@@ -2,288 +2,256 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
-// Pure MD5 calculation for Edge Runtime
-function md5(string: string): string {
-  function rotateLeft(lValue: number, iShiftBits: number): number {
-    return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
-  }
-  function addUnsigned(lX: number, lY: number): number {
-    const lX8 = lX & 0x80000000;
-    const lY8 = lY & 0x80000000;
-    const lX4 = lX & 0x40000000;
-    const lY4 = lY & 0x40000000;
-    const lResult = (lX & 0x3fffffff) + (lY & 0x3fffffff);
-    if (lX4 & lY4) return lResult ^ 0x80000000 ^ lX8 ^ lY8;
-    if (lX4 | lY4) {
-      if (lResult & 0x40000000) return lResult ^ 0xc0000000 ^ lX8 ^ lY8;
-      else return lResult ^ 0x40000000 ^ lX8 ^ lY8;
-    } else {
-      return lResult ^ lX8 ^ lY8;
-    }
-  }
-  function F(x: number, y: number, z: number) { return (x & y) | (~x & z); }
-  function G(x: number, y: number, z: number) { return (x & z) | (y & ~z); }
-  function H(x: number, y: number, z: number) { return x ^ y ^ z; }
-  function I(x: number, y: number, z: number) { return y ^ (x | ~z); }
+type OrderRow = {
+  merchant_order_id: string;
+  total_amount: number | string;
+  payment_status: string | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+  items: unknown;
+  duitku_reference: string | null;
+};
 
-  function FF(a: number, b: number, c: number, d: number, x: number, s: number, ac: number) {
-    a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac));
-    return addUnsigned(rotateLeft(a, s), b);
-  }
-  function GG(a: number, b: number, c: number, d: number, x: number, s: number, ac: number) {
-    a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac));
-    return addUnsigned(rotateLeft(a, s), b);
-  }
-  function HH(a: number, b: number, c: number, d: number, x: number, s: number, ac: number) {
-    a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac));
-    return addUnsigned(rotateLeft(a, s), b);
-  }
-  function II(a: number, b: number, c: number, d: number, x: number, s: number, ac: number) {
-    a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac));
-    return addUnsigned(rotateLeft(a, s), b);
-  }
+const jsonResponse = (body: Record<string, unknown>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
-  function convertToWordArray(str: string): number[] {
-    const lMessageLength = str.length;
-    const lNumberOfWordsTemp1 = lMessageLength + 8;
-    const lNumberOfWordsTemp2 = (lNumberOfWordsTemp1 - (lNumberOfWordsTemp1 % 64)) / 64;
-    const lNumberOfWords = (lNumberOfWordsTemp2 + 1) * 16;
-    const lWordArray: number[] = Array(lNumberOfWords).fill(0);
-    let lBytePosition = 0;
-    let lByteCount = 0;
-    while (lByteCount < lMessageLength) {
-      const lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-      lBytePosition = (lByteCount % 4) * 8;
-      lWordArray[lWordCount] = lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition);
-      lByteCount++;
-    }
-    const lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-    lBytePosition = (lByteCount % 4) * 8;
-    lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
-    lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
-    lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
-    return lWordArray;
-  }
-
-  function wordToHex(lValue: number): string {
-    let wordToHexValue = "";
-    for (let lCount = 0; lCount <= 3; lCount++) {
-      const lByte = (lValue >>> (lCount * 8)) & 255;
-      const wordToHexValueTemp = "0" + lByte.toString(16);
-      wordToHexValue += wordToHexValueTemp.substr(wordToHexValueTemp.length - 2, 2);
-    }
-    return wordToHexValue;
-  }
-
-  const encodedStr = unescape(encodeURIComponent(string));
-  const x = convertToWordArray(encodedStr);
-  let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
-  const S11 = 7, S12 = 12, S13 = 17, S14 = 22;
-  const S21 = 5, S22 = 9, S23 = 14, S24 = 20;
-  const S31 = 4, S32 = 11, S33 = 16, S34 = 23;
-  const S41 = 6, S42 = 10, S43 = 15, S44 = 21;
-
-  for (let k = 0; k < x.length; k += 16) {
-    const AA = a, BB = b, CC = c, DD = d;
-    a = FF(a, b, c, d, x[k + 0], S11, 0xd76aa478);
-    d = FF(d, a, b, c, x[k + 1], S12, 0xe8c7b756);
-    c = FF(c, d, a, b, x[k + 2], S13, 0x242070db);
-    b = FF(b, c, d, a, x[k + 3], S14, 0xc1bdceee);
-    a = FF(a, b, c, d, x[k + 4], S11, 0xf57c0faf);
-    d = FF(d, a, b, c, x[k + 5], S12, 0x4787c62a);
-    c = FF(c, d, a, b, x[k + 6], S13, 0xa8304613);
-    b = FF(b, c, d, a, x[k + 7], S14, 0xfd469501);
-    a = FF(a, b, c, d, x[k + 8], S11, 0x698098d8);
-    d = FF(d, a, b, c, x[k + 9], S12, 0x8b44f7af);
-    c = FF(c, d, a, b, x[k + 10], S13, 0xffff5bb1);
-    b = FF(b, c, d, a, x[k + 11], S14, 0x895cd7be);
-    a = FF(a, b, c, d, x[k + 12], S11, 0x6b901122);
-    d = FF(d, a, b, c, x[k + 13], S12, 0xfd987193);
-    c = FF(c, d, a, b, x[k + 14], S13, 0xa679438e);
-    b = FF(b, c, d, a, x[k + 15], S14, 0x49b40821);
-
-    a = GG(a, b, c, d, x[k + 1], S21, 0xf61e2562);
-    d = GG(d, a, b, c, x[k + 6], S22, 0xc040b340);
-    c = GG(c, d, a, b, x[k + 11], S23, 0x265e5a51);
-    b = GG(b, c, d, a, x[k + 0], S24, 0xe9b6c7aa);
-    a = GG(a, b, c, d, x[k + 5], S21, 0xd62f105d);
-    d = GG(d, a, b, c, x[k + 10], S22, 0x2441453);
-    c = GG(c, d, a, b, x[k + 15], S23, 0xd8a1e681);
-    b = GG(b, c, d, a, x[k + 4], S24, 0xe7d3fbc8);
-    a = GG(a, b, c, d, x[k + 9], S21, 0x21e1cde6);
-    d = GG(d, a, b, c, x[k + 14], S22, 0xc33707d6);
-    c = GG(c, d, a, b, x[k + 3], S23, 0xf4d50d87);
-    b = GG(b, c, d, a, x[k + 8], S24, 0x455a14ed);
-    a = GG(a, b, c, d, x[k + 13], S21, 0xa9e3e905);
-    d = GG(d, a, b, c, x[k + 2], S22, 0xfcefa3f8);
-    c = GG(c, d, a, b, x[k + 7], S23, 0x676f02d9);
-    b = GG(b, c, d, a, x[k + 12], S24, 0x8d2a4c8a);
-
-    a = HH(a, b, c, d, x[k + 5], S31, 0xfffa3942);
-    d = HH(d, a, b, c, x[k + 8], S32, 0x8771f681);
-    c = HH(c, d, a, b, x[k + 11], S33, 0x6d9d6122);
-    b = HH(b, c, d, a, x[k + 14], S34, 0xfde5380c);
-    a = HH(a, b, c, d, x[k + 1], S31, 0xa4beea44);
-    d = HH(d, a, b, c, x[k + 4], S32, 0x4bdecfa9);
-    c = HH(c, d, a, b, x[k + 7], S33, 0xf6bb4b60);
-    b = HH(b, c, d, a, x[k + 10], S34, 0xbebfbc70);
-    a = HH(a, b, c, d, x[k + 13], S31, 0x289b7ec6);
-    d = HH(d, a, b, c, x[k + 0], S32, 0xeaa127fa);
-    c = HH(c, d, a, b, x[k + 3], S33, 0xd4ef3085);
-    b = HH(b, c, d, a, x[k + 6], S34, 0x4881d05);
-    a = HH(a, b, c, d, x[k + 9], S31, 0xd9d4d039);
-    d = HH(d, a, b, c, x[k + 12], S32, 0xe6db99e5);
-    c = HH(c, d, a, b, x[k + 15], S33, 0x1fa27cf8);
-    b = HH(b, c, d, a, x[k + 2], S34, 0xc4ac5665);
-
-    a = II(a, b, c, d, x[k + 0], S41, 0xf4292244);
-    d = II(d, a, b, c, x[k + 7], S42, 0x432aff97);
-    c = II(c, d, a, b, x[k + 14], S43, 0xab9423a7);
-    b = II(b, c, d, a, x[k + 5], S44, 0xfc93a039);
-    a = II(a, b, c, d, x[k + 12], S41, 0x655b59c3);
-    d = II(d, a, b, c, x[k + 3], S42, 0x8f0ccc92);
-    c = II(c, d, a, b, x[k + 10], S43, 0xffeff47d);
-    b = II(b, c, d, a, x[k + 1], S44, 0x85845dd1);
-    a = II(a, b, c, d, x[k + 8], S41, 0x6fa87e4f);
-    d = II(d, a, b, c, x[k + 15], S42, 0xfe2ce6e0);
-    c = II(c, d, a, b, x[k + 6], S43, 0xa3014314);
-    b = II(b, c, d, a, x[k + 13], S44, 0x4e0811a1);
-    a = II(a, b, c, d, x[k + 4], S41, 0xf7537e82);
-    d = II(d, a, b, c, x[k + 11], S42, 0xbd3af235);
-    c = II(c, d, a, b, x[k + 2], S43, 0x2ad7d2bb);
-    b = II(b, c, d, a, x[k + 9], S44, 0xeb86d391);
-
-    a = addUnsigned(a, AA);
-    b = addUnsigned(b, BB);
-    c = addUnsigned(c, CC);
-    d = addUnsigned(d, DD);
-  }
-  return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
+async function hmacSha256Hex(secret: string, message: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405);
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const merchantCode = Deno.env.get("DUITKU_MERCHANT_CODE") || "";
+    const apiKey = Deno.env.get("DUITKU_API_KEY") || "";
+    const duitkuEnv = Deno.env.get("DUITKU_ENV") || "";
 
-    const body = await req.json();
-    const {
-      merchantOrderId,
-      paymentAmount,
-      productDetails,
-      email,
-      phoneNumber,
-      customerName,
-      itemDetails,
-      callbackUrl: customCallbackUrl,
-      returnUrl: customReturnUrl,
-      paymentMethod = ""
-    } = body;
-
-    if (!merchantOrderId || !paymentAmount) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields: merchantOrderId and paymentAmount are required." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!supabaseUrl || !serviceRoleKey || !merchantCode || !apiKey) {
+      console.error("[create-invoice] Required server configuration is missing.");
+      return jsonResponse({ error: "Payment service is not configured." }, 503);
+    }
+    if (duitkuEnv !== "sandbox" && duitkuEnv !== "production") {
+      console.error("[create-invoice] DUITKU_ENV must be explicitly set to sandbox or production.");
+      return jsonResponse({ error: "Payment environment is not configured." }, 503);
     }
 
-    // Official Duitku Settings
-    const merchantCode = Deno.env.get("DUITKU_MERCHANT_CODE") || "D12345";
-    const apiKey = Deno.env.get("DUITKU_API_KEY") || "test_api_key";
-    const env = Deno.env.get("DUITKU_ENV") || "sandbox";
+    const body = await req.json();
+    const merchantOrderId = typeof body.merchantOrderId === "string" ? body.merchantOrderId.trim() : "";
+    const paymentAmount = Number(body.paymentAmount);
 
-    const inquiryUrl =
-      env === "production"
-        ? "https://passport.duitku.com/webapi/api/merchant/v2/inquiry"
-        : "https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry";
+    if (!merchantOrderId || !Number.isSafeInteger(paymentAmount) || paymentAmount <= 0) {
+      return jsonResponse({ error: "merchantOrderId and a positive integer paymentAmount are required." }, 400);
+    }
 
-    const callbackUrl =
-      customCallbackUrl ||
-      `${supabaseUrl}/functions/v1/duitku-callback`;
-
-    const returnUrl = customReturnUrl || `${req.headers.get("origin") || ""}/order-success`;
-
-    // Signature Formula (Official Duitku Documentation):
-    // MD5(merchantCode + merchantOrderId + paymentAmount + apiKey)
-    const intAmount = Math.round(Number(paymentAmount));
-    const signatureRaw = `${merchantCode}${merchantOrderId}${intAmount}${apiKey}`;
-    const signature = md5(signatureRaw);
-
-    const payload = {
-      merchantCode,
-      paymentAmount: intAmount,
-      paymentMethod: paymentMethod || "",
-      merchantOrderId,
-      productDetails: productDetails || `Order ${merchantOrderId}`,
-      additionalParam: "",
-      merchantUserInfo: "",
-      customerVaName: customerName || "Customer",
-      email: email || "customer@example.com",
-      phoneNumber: phoneNumber || "081234567890",
-      itemDetails: Array.isArray(itemDetails) ? itemDetails : [],
-      customerDetail: {
-        firstName: customerName || "Customer",
-        lastName: "",
-        email: email || "customer@example.com",
-        phoneNumber: phoneNumber || "081234567890"
-      },
-      callbackUrl,
-      returnUrl,
-      expiryPeriod: 1440,
-      signature
-    };
-
-    console.log(`[Duitku Inquiry] Requesting invoice for ${merchantOrderId} to ${inquiryUrl}`);
-    const duitkuResponse = await fetch(inquiryUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
     });
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("merchant_order_id,total_amount,payment_status,customer_name,customer_email,customer_phone,items,duitku_reference")
+      .eq("merchant_order_id", merchantOrderId)
+      .maybeSingle();
 
-    const duitkuData = await duitkuResponse.json();
-    console.log(`[Duitku Inquiry] Response:`, duitkuData);
+    if (orderError) {
+      console.error("[create-invoice] Order lookup failed:", orderError.message);
+      return jsonResponse({ error: "Unable to validate the order." }, 500);
+    }
+    if (!order) return jsonResponse({ error: "Order not found." }, 404);
 
-    // Record in payment_logs
-    if (supabaseUrl && supabaseServiceKey) {
-      await supabase.from("payment_logs").insert({
-        merchant_order_id: merchantOrderId,
-        reference: duitkuData.reference || null,
-        event_type: "INVOICE_CREATED",
-        payload: {
-          request: { merchantCode, merchantOrderId, paymentAmount },
-          response: duitkuData
-        }
-      });
+    const storedAmount = Number((order as OrderRow).total_amount);
+    if (!Number.isSafeInteger(storedAmount) || storedAmount !== paymentAmount) {
+      return jsonResponse({ error: "Payment amount does not match the stored order amount." }, 400);
+    }
+    if ((order as OrderRow).payment_status !== "PENDING") {
+      return jsonResponse({ error: "Only pending orders can request an invoice." }, 409);
+    }
+    if ((order as OrderRow).duitku_reference) {
+      return jsonResponse({ error: "An invoice reference already exists for this order." }, 409);
+    }
 
-      // Update order if reference exists
-      if (duitkuData.reference) {
-        await supabase
-          .from("orders")
-          .update({
-            duitku_reference: duitkuData.reference,
-            duitku_payment_url: duitkuData.paymentUrl || null,
-            duitku_va_number: duitkuData.vaNumber || null
-          })
-          .eq("merchant_order_id", merchantOrderId);
+    const origin = req.headers.get("origin");
+    if (!origin) return jsonResponse({ error: "Request origin is required." }, 400);
+    let returnUrl: string;
+    try {
+      returnUrl = new URL("/order-success", origin).toString();
+    } catch {
+      return jsonResponse({ error: "Invalid request origin." }, 400);
+    }
+
+    const orderRow = order as OrderRow;
+    if (!Array.isArray(orderRow.items) || orderRow.items.length === 0) {
+      return jsonResponse({ error: "The order does not contain valid items." }, 400);
+    }
+
+    const requestedItems = orderRow.items.map((entry: any) => ({
+      productId: String(entry?.product?.id || entry?.product_id || ""),
+      quantity: Number(entry?.quantity),
+    }));
+    if (requestedItems.some((item) =>
+      !item.productId || !Number.isSafeInteger(item.quantity) || item.quantity <= 0
+    )) {
+      return jsonResponse({ error: "The order contains an invalid product or quantity." }, 400);
+    }
+
+    const productIds = [...new Set(requestedItems.map((item) => item.productId))];
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("id,name,price,stock")
+      .in("id", productIds);
+    if (productsError) {
+      console.error("[create-invoice] Product validation failed:", productsError.message);
+      return jsonResponse({ error: "Unable to validate current product prices and stock." }, 500);
+    }
+
+    const productsById = new Map<string, any>(
+      (products || []).map((product: any) => [String(product.id), product] as [string, any]),
+    );
+    if (productsById.size !== productIds.length) {
+      return jsonResponse({ error: "One or more ordered products no longer exist." }, 409);
+    }
+
+    const quantitiesByProduct = new Map<string, number>();
+    for (const item of requestedItems) {
+      quantitiesByProduct.set(item.productId, (quantitiesByProduct.get(item.productId) || 0) + item.quantity);
+    }
+    for (const [productId, quantity] of quantitiesByProduct) {
+      const product = productsById.get(productId) as any;
+      if (!Number.isSafeInteger(Number(product.price)) || Number(product.price) < 0 ||
+          !Number.isSafeInteger(Number(product.stock)) || Number(product.stock) < quantity) {
+        return jsonResponse({ error: "A product price or available stock has changed. Refresh your cart." }, 409);
       }
     }
 
-    return new Response(JSON.stringify(duitkuData), {
-      status: duitkuResponse.ok ? 200 : 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    const itemDetails = requestedItems.map((item) => {
+      const product = productsById.get(item.productId) as any;
+      return {
+        name: String(product.name || "Storefront item").slice(0, 50),
+        price: Number(product.price),
+        quantity: item.quantity,
+      };
+    });
+    const itemDetailsTotal = itemDetails.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (!Number.isSafeInteger(itemDetailsTotal) || itemDetailsTotal !== paymentAmount ||
+        storedAmount !== itemDetailsTotal) {
+      return jsonResponse({ error: "Current product prices do not match the stored order total." }, 400);
+    }
+
+    const timestamp = Date.now().toString();
+    const signature = await hmacSha256Hex(apiKey, merchantCode + timestamp);
+    const callbackUrl = `${supabaseUrl.replace(/\/$/, "")}/functions/v1/duitku-callback`;
+    const payload = {
+      paymentAmount,
+      merchantOrderId,
+      productDetails: `Order ${merchantOrderId}`,
+      additionalParam: "",
+      merchantUserInfo: "",
+      paymentMethod: "",
+      customerVaName: (orderRow.customer_name || "Customer").slice(0, 20),
+      email: orderRow.customer_email || "customer@example.com",
+      phoneNumber: orderRow.customer_phone || "",
+      ...(itemDetails.length > 0 ? { itemDetails } : {}),
+      callbackUrl,
+      returnUrl,
+      expiryPeriod: 1440,
+    };
+
+    const endpoint = duitkuEnv === "production"
+      ? "https://api-prod.duitku.com/api/merchant/createInvoice"
+      : "https://api-sandbox.duitku.com/api/merchant/createInvoice";
+
+    const providerResponse = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-duitku-signature": signature,
+        "x-duitku-timestamp": timestamp,
+        "x-duitku-merchantcode": merchantCode,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const providerText = await providerResponse.text();
+    let providerData: Record<string, any>;
+    try {
+      providerData = JSON.parse(providerText);
+    } catch {
+      console.error("[create-invoice] Duitku returned a non-JSON response.");
+      return jsonResponse({ error: "Duitku returned an invalid response." }, 502);
+    }
+
+    if (!providerResponse.ok || providerData.statusCode !== "00" ||
+        typeof providerData.reference !== "string" || !providerData.reference) {
+      console.error("[create-invoice] Duitku rejected the invoice request:", {
+        httpStatus: providerResponse.status,
+        statusCode: providerData.statusCode,
+      });
+      return jsonResponse({
+        error: providerData.statusMessage || "Duitku failed to create the invoice.",
+      }, 502);
+    }
+
+    const { data: updatedOrder, error: updateError } = await supabase
+      .from("orders")
+      .update({
+        duitku_reference: providerData.reference,
+        duitku_payment_url: providerData.paymentUrl || null,
+        duitku_va_number: providerData.vaNumber || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("merchant_order_id", merchantOrderId)
+      .eq("payment_status", "PENDING")
+      .is("duitku_reference", null)
+      .select("merchant_order_id")
+      .maybeSingle();
+
+    if (updateError || !updatedOrder) {
+      console.error("[create-invoice] Provider invoice created but order reference could not be persisted.", {
+        error: updateError?.message,
+        merchantOrderId,
+      });
+      return jsonResponse({ error: "Invoice was created but could not be safely linked to the order. Contact support." }, 502);
+    }
+
+    const { error: logError } = await supabase.from("payment_logs").insert({
+      merchant_order_id: merchantOrderId,
+      reference: providerData.reference,
+      event_type: "INVOICE_CREATED",
+      payload: {
+        environment: duitkuEnv,
+        statusCode: providerData.statusCode,
+        statusMessage: providerData.statusMessage || null,
+      },
+    });
+    if (logError) console.error("[create-invoice] Payment audit log insert failed:", logError.message);
+
+    return jsonResponse({
+      merchantCode: providerData.merchantCode || merchantCode,
+      reference: providerData.reference,
+      paymentUrl: providerData.paymentUrl || null,
+      vaNumber: providerData.vaNumber || null,
+      amount: providerData.amount || String(paymentAmount),
+      statusCode: providerData.statusCode,
+      statusMessage: providerData.statusMessage || "SUCCESS",
+      environment: duitkuEnv,
     });
   } catch (error) {
-    console.error("[create-invoice] Error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Internal Server Error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("[create-invoice] Unexpected error:", error instanceof Error ? error.message : "Unknown error");
+    return jsonResponse({ error: "Unable to create the Duitku invoice." }, 500);
   }
 });
