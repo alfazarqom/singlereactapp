@@ -1111,7 +1111,7 @@ const ProductListingPage = () => {
   );
 };
 
-// --- C. PRODUCT DETAIL PAGE ---
+// --- C. PRODUCT DETAIL PAGE: LOW-FIDELITY WIREFRAME ---
 const ProductDetailPage = () => {
   const {
     selectedProduct,
@@ -1122,250 +1122,205 @@ const ProductDetailPage = () => {
     setSelectedSize,
     selectedQuantity: qty,
     setSelectedQuantity: setQty,
-    wishlist
+    wishlist,
+    toggleWishlist
   } = useApp();
   const product = selectedProduct || MOCK_PRODUCTS[0];
-  const [selectedImg, setSelectedImg] = useState(product.images[0]);
+  const [selectedImg, setSelectedImg] = useState(0);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [openInformation, setOpenInformation] = useState("specifications");
+  const images = product.images?.length ? product.images : [];
   const relatedProducts = MOCK_PRODUCTS.filter((item) => item.id !== product.id).slice(0, 4);
   const isWishlisted = wishlist.includes(product.id);
   const stock = Math.max(0, Number(product.stock) || 0);
+  const wireframePanel = "rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60";
+  const placeholder = "rounded-lg bg-slate-200 dark:bg-slate-700";
 
   useEffect(() => {
-    setSelectedImg(product.images[0]);
-  }, [product.id, product.images]);
+    setSelectedImg(0);
+    setDescriptionExpanded(false);
+    setOpenInformation("specifications");
+  }, [product.id]);
 
   const handleShare = async () => {
     const shareData = { title: product.name, url: window.location.href };
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareData.url);
-      } else {
-        throw new Error("Sharing is unavailable");
-      }
+      if (navigator.share) await navigator.share(shareData);
+      else if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(shareData.url);
     } catch (error) {
       if (error?.name !== "AbortError") {
-        // Keep the page usable when browser sharing is unavailable or dismissed.
+        // Sharing is optional; keep the wireframe usable if unavailable.
       }
     }
   };
 
-  return (
-    <div className="space-y-8 pb-28">
-      {/* Product Header */}
-      <div className="flex items-center justify-between gap-3">
-        <button
-          onClick={() => navigateTo("products")}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleShare}
-            aria-label="Share product"
-            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => navigateTo("cart")}
-            aria-label="Open cart"
-            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
-          >
-            <ShoppingCart className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+  const informationRows = [
+    { id: "specifications", label: "Specifications", content: product.specs?.join(" · ") || "Product specifications" },
+    { id: "materials", label: "Materials & details", content: "Material, care instructions, and product details" },
+    { id: "shipping", label: "Shipping & returns", content: "Shipping estimates, delivery information, and return policy" }
+  ];
 
-      {/* Product Gallery + Product Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
+  return (
+    <div className="mx-auto max-w-5xl space-y-6 pb-6" data-page="product-detail-wireframe">
+      {/* ProductHeader */}
+      <header className="flex items-center justify-between gap-3 border-b border-dashed border-slate-300 dark:border-slate-700 pb-4">
+        <button onClick={() => navigateTo("products")} className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Product Detail · Low-Fidelity</span>
+        <div className="flex items-center gap-2">
+          <button onClick={handleShare} aria-label="Share product" className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-2.5 text-slate-500"><Share2 className="h-4 w-4" /></button>
+          <button onClick={() => toggleWishlist(product.id)} aria-label="Toggle wishlist" aria-pressed={isWishlisted} className={`rounded-lg border border-dashed p-2.5 ${isWishlisted ? "border-slate-500 bg-slate-200 dark:bg-slate-700" : "border-slate-300 dark:border-slate-700"}`}>
+            <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
+          </button>
+          <button onClick={() => navigateTo("cart")} aria-label="Open cart" className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-2.5 text-slate-500"><ShoppingCart className="h-4 w-4" /></button>
+        </div>
+      </header>
+
+      {/* ProductGallery + ProductSummary */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
         <section aria-label="Product gallery" className="space-y-3">
-          <div className="aspect-square rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
-            <img src={selectedImg} alt={product.name} className="w-full h-full object-cover" />
+          <div className={`${wireframePanel} relative aspect-square overflow-hidden flex flex-col items-center justify-center gap-3`}>
+            {images[selectedImg] ? (
+              <img src={images[selectedImg]} alt={product.name} className="h-full w-full object-contain opacity-70 grayscale" />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3">
+                <div className="h-20 w-20 rounded-2xl border-2 border-dashed border-slate-400 dark:border-slate-600" />
+                <span className="text-xs text-slate-400">Main product image</span>
+              </div>
+            )}
+            <span className="absolute bottom-3 rounded-md border border-dashed border-slate-400 bg-white/80 px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 dark:bg-slate-950/80">Gallery / Main image</span>
           </div>
-          <div className="flex items-center gap-3 overflow-x-auto pb-1">
-            {product.images.map((img, index) => (
-              <button
-                key={img}
-                onClick={() => setSelectedImg(img)}
-                aria-label={`View product image ${index + 1}`}
-                aria-pressed={selectedImg === img}
-                className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                  selectedImg === img ? "border-orange-500" : "border-transparent opacity-70"
-                }`}
-              >
-                <img src={img} alt="" className="w-full h-full object-cover" />
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {images.map((img, index) => (
+              <button key={img} onClick={() => setSelectedImg(index)} aria-label={`Select product image ${index + 1}`} aria-pressed={selectedImg === index} className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 grayscale ${selectedImg === index ? "border-slate-500" : "border-dashed border-slate-300 dark:border-slate-700"}`}>
+                <img src={img} alt="" className="h-full w-full object-cover opacity-70" />
               </button>
             ))}
+            {images.length === 0 && <div className={`${placeholder} h-16 w-16`} />}
           </div>
+          <p className="text-center text-[10px] text-slate-400">Thumbnail carousel</p>
         </section>
 
-        <section aria-label="Product information" className="space-y-5">
-          <div className="space-y-2">
-            <span className="inline-flex px-2.5 py-1 bg-orange-100 dark:bg-orange-950 text-orange-600 rounded-md text-[11px] font-semibold">
-              {product.category}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white leading-tight">
-              {product.name}
-            </h1>
-            <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
-              <span className="flex items-center gap-1 text-amber-500 font-semibold">
-                <Star className="w-4 h-4 fill-current" /> {product.rating}
-              </span>
-              <span>({product.reviewCount} reviews)</span>
-              <span className={stock > 0 ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold"}>
-                {stock > 0 ? `In Stock · ${stock} available` : "Out of Stock"}
-              </span>
+        <section aria-label="Product summary" className="space-y-5">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-md border border-dashed border-slate-400 px-2.5 py-1 text-[10px] text-slate-500">{product.category || "Category"}</span>
+              <span className={`rounded-md border border-dashed px-2.5 py-1 text-[10px] ${stock > 0 ? "border-slate-400 text-slate-600" : "border-slate-300 text-slate-400"}`}>{stock > 0 ? "Available" : "Unavailable"}</span>
+            </div>
+            <h1 className="text-xl font-semibold leading-snug text-slate-800 dark:text-slate-100 sm:text-2xl">{product.name}</h1>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-1"><Star className="h-4 w-4" /> {product.rating || "—"}</span>
+              <span>{product.reviewCount || 0} reviews</span>
+              <span>Stock: {stock}</span>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-baseline gap-3">
-            <span className="text-3xl font-semibold text-slate-900 dark:text-white">{formatIDR(product.price)}</span>
-            {product.originalPrice > product.price && (
-              <span className="text-sm text-slate-400 line-through">{formatIDR(product.originalPrice)}</span>
-            )}
+          <div className={`${wireframePanel} space-y-2 p-4`}>
+            <p className="text-[10px] uppercase tracking-wider text-slate-400">Price</p>
+            <div className="flex flex-wrap items-baseline gap-3">
+              <span className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{formatIDR(product.price)}</span>
+              {product.originalPrice > product.price && <span className="text-sm text-slate-400 line-through">{formatIDR(product.originalPrice)}</span>}
+            </div>
+            <div className={`${placeholder} h-2 w-24`} />
           </div>
 
-          {/* Product Variants */}
-          <div className="space-y-4">
+          {/* ProductVariants */}
+          <section className="space-y-3">
             {product.colors?.length > 0 && (
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Color: {selectedColor}</label>
+                <h2 className="text-xs font-semibold text-slate-600 dark:text-slate-300">Color · {selectedColor}</h2>
                 <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      aria-pressed={selectedColor === color}
-                      className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                        selectedColor === color
-                          ? "border-orange-500 bg-orange-50 dark:bg-orange-950/40 text-orange-600"
-                          : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
-                      }`}
-                    >
-                      {color}
-                    </button>
-                  ))}
+                  {product.colors.map((color) => <button key={color} onClick={() => setSelectedColor(color)} aria-pressed={selectedColor === color} className={`rounded-lg border border-dashed px-3 py-2 text-xs ${selectedColor === color ? "border-slate-600 bg-slate-200 dark:bg-slate-700" : "border-slate-300 dark:border-slate-700"}`}>{color}</button>)}
                 </div>
               </div>
             )}
             {product.sizes?.length > 0 && (
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Size / Option: {selectedSize}</label>
+                <h2 className="text-xs font-semibold text-slate-600 dark:text-slate-300">Size / Option · {selectedSize}</h2>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      aria-pressed={selectedSize === size}
-                      className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                        selectedSize === size
-                          ? "border-orange-500 bg-orange-50 dark:bg-orange-950/40 text-orange-600"
-                          : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {product.sizes.map((size) => <button key={size} onClick={() => setSelectedSize(size)} aria-pressed={selectedSize === size} className={`rounded-lg border border-dashed px-3 py-2 text-xs ${selectedSize === size ? "border-slate-600 bg-slate-200 dark:bg-slate-700" : "border-slate-300 dark:border-slate-700"}`}>{size}</button>)}
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
-          {/* Quantity Selector */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Quantity</label>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl p-1 bg-white dark:bg-slate-900">
-                <button
-                  onClick={() => setQty(Math.max(1, qty - 1))}
-                  disabled={qty <= 1}
-                  aria-label="Decrease quantity"
-                  className="p-1.5 text-slate-600 disabled:opacity-40"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="px-4 font-semibold text-xs tabular-nums">{qty}</span>
-                <button
-                  onClick={() => setQty(Math.min(Math.max(stock, 1), qty + 1))}
-                  disabled={qty >= stock || stock === 0}
-                  aria-label="Increase quantity"
-                  className="p-1.5 text-slate-600 disabled:opacity-40"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+          {/* ProductQuantity */}
+          <section className="space-y-2">
+            <h2 className="text-xs font-semibold text-slate-600 dark:text-slate-300">Quantity</h2>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+                <button onClick={() => setQty(Math.max(1, qty - 1))} disabled={qty <= 1} aria-label="Decrease quantity" className="p-3 disabled:opacity-40"><Minus className="h-4 w-4" /></button>
+                <span className="min-w-10 text-center text-sm">{qty}</span>
+                <button onClick={() => setQty(Math.min(Math.max(stock, 1), qty + 1))} disabled={qty >= stock || stock === 0} aria-label="Increase quantity" className="p-3 disabled:opacity-40"><Plus className="h-4 w-4" /></button>
               </div>
-              <span className="text-[11px] text-slate-400">Maximum {stock} items</span>
+              <span className="text-[11px] text-slate-400">Max. {stock} items</span>
             </div>
-          </div>
-
-          <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-4 space-y-1">
-            <p className="text-[11px] text-slate-500">Subtotal ({qty} item{qty > 1 ? "s" : ""})</p>
-            <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatIDR(product.price * qty)}</p>
-          </div>
+          </section>
         </section>
       </div>
 
-      {/* Product Description */}
-      <section className="space-y-2">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Product Description</h2>
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{product.description}</p>
+      {/* ProductDescription */}
+      <section className={`${wireframePanel} space-y-3 p-4`}>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Product Description</h2>
+          <span className="text-[10px] text-slate-400">Section</span>
+        </div>
+        <p className={`text-xs leading-relaxed text-slate-500 ${descriptionExpanded ? "" : "line-clamp-2"}`}>{product.description || "Product description placeholder"}</p>
+        <button onClick={() => setDescriptionExpanded((value) => !value)} className="text-xs font-semibold text-slate-600 underline dark:text-slate-300">{descriptionExpanded ? "See Less" : "See More"}</button>
       </section>
 
-      {/* Product Specifications */}
+      {/* ProductInformation */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Product Specifications</h2>
-        {product.specs?.length > 0 ? (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {product.specs.map((spec) => (
-              <li key={spec} className="flex items-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-900 px-3 py-3 text-xs text-slate-600 dark:text-slate-300">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" /> {spec}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-xs text-slate-500">Specifications are not available for this product.</p>
-        )}
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Product Information</h2>
+        <div className="overflow-hidden rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+          {informationRows.map((row) => (
+            <div key={row.id} className="border-b border-dashed border-slate-300 last:border-b-0 dark:border-slate-700">
+              <button onClick={() => setOpenInformation(openInformation === row.id ? "" : row.id)} aria-expanded={openInformation === row.id} className="flex w-full items-center justify-between gap-3 p-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300">
+                {row.label}<ChevronDown className={`h-4 w-4 transition-transform ${openInformation === row.id ? "rotate-180" : ""}`} />
+              </button>
+              {openInformation === row.id && <p className="px-4 pb-4 text-xs leading-relaxed text-slate-500">{row.content}</p>}
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* Product Reviews */}
+      {/* ProductReviews */}
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">Customer Reviews</h2>
-          <span className="text-xs text-slate-500">{product.reviewCount} reviews</span>
+          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Product Reviews</h2>
+          <button onClick={() => navigateTo("product-reviews", product)} className="text-xs text-slate-500 underline">See All</button>
         </div>
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
-          <div>
-            <p className="text-3xl font-semibold text-slate-900 dark:text-white">{product.rating}</p>
-            <div className="flex items-center gap-1 text-amber-500"><Star className="w-4 h-4 fill-current" /><span className="text-xs">out of 5</span></div>
+        <div className={`${wireframePanel} flex items-center gap-4 p-4`}>
+          <div className="min-w-20 text-center">
+            <p className="text-3xl font-semibold text-slate-700 dark:text-slate-200">{product.rating || "—"}</p>
+            <p className="text-[10px] text-slate-400">out of 5</p>
           </div>
-          <div className="flex-1">
-            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Review Summary</p>
-            <p className="text-[11px] text-slate-500">Based on {product.reviewCount} customer ratings</p>
+          <div className="flex-1 space-y-2">
+            <div className={`${placeholder} h-2 w-full`} />
+            <div className={`${placeholder} h-2 w-4/5`} />
+            <div className={`${placeholder} h-2 w-3/5`} />
+            <p className="text-[10px] text-slate-400">{product.reviewCount || 0} ratings</p>
           </div>
         </div>
-        <div className="rounded-2xl bg-slate-50 dark:bg-slate-900 p-4 text-xs text-slate-500">
-          Individual review entries are not included in the current product data.
+        <div className={`${wireframePanel} space-y-2 p-4`}>
+          <div className={`${placeholder} h-3 w-1/3`} />
+          <div className={`${placeholder} h-2 w-full`} />
+          <div className={`${placeholder} h-2 w-4/5`} />
+          <p className="text-[10px] text-slate-400">Review preview placeholder</p>
         </div>
       </section>
 
-      {/* Related Products */}
+      {/* RelatedProducts */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Related Products</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Related Products</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {relatedProducts.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => navigateTo("product-detail", item)}
-              className="text-left group space-y-2"
-            >
-              <div className="aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
-                <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <button key={item.id} onClick={() => navigateTo("product-detail", item)} className="space-y-2 text-left">
+              <div className={`${wireframePanel} aspect-square overflow-hidden`}>
+                <img src={item.images?.[0]} alt="" className="h-full w-full object-cover opacity-60 grayscale" />
               </div>
-              <span className="block text-xs font-semibold text-slate-800 dark:text-slate-200 line-clamp-2">{item.name}</span>
-              <span className="block text-xs font-semibold text-slate-900 dark:text-white">{formatIDR(item.price)}</span>
+              <span className="block line-clamp-2 text-xs font-medium text-slate-600 dark:text-slate-300">{item.name}</span>
+              <span className="block text-xs text-slate-500">{formatIDR(item.price)}</span>
             </button>
           ))}
         </div>
