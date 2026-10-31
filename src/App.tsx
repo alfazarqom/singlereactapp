@@ -489,6 +489,7 @@ const ProductGridSkeleton = ({ count = 6 }) => (
 
 const ProductCard = ({ product }) => {
   const { navigateTo, wishlist, toggleWishlist } = useApp();
+  const isWishlisted = wishlist.includes(product.id);
 
   return (
     <div className="group flex flex-col gap-0.5">
