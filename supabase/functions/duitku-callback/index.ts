@@ -102,13 +102,13 @@ Deno.serve(withSupabase({ auth: "none" }, async (req, ctx) => {
       return textResponse("Invalid Signature", 400);
     }
 
-    const eventKey = await sha256Hex([
+    const eventKey = await sha256Hex(JSON.stringify([
       merchantCode,
       merchantOrderId,
       amount,
       reference,
       resultCode,
-    ].join("|"));
+    ]));
 
     const { data: outcome, error } = await ctx.supabaseAdmin.rpc("apply_duitku_callback", {
       p_event_key: eventKey,
