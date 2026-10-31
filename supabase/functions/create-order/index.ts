@@ -157,7 +157,6 @@ Deno.serve(withSupabase({ auth: "none" }, async (req, ctx) => {
           customerVaName: customerName.trim().slice(0, 20),
           callbackUrl,
           returnUrl,
-          expiryPeriod: 1440,
           itemDetails,
         }),
       });
