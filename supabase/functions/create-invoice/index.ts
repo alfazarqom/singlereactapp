@@ -109,6 +109,11 @@ Deno.serve(async (req) => {
         )
       : [];
 
+    const itemDetailsTotal = itemDetails.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (itemDetails.length === 0 || !Number.isSafeInteger(itemDetailsTotal) || itemDetailsTotal !== paymentAmount) {
+      return jsonResponse({ error: "Stored order items do not match the requested payment amount." }, 400);
+    }
+
     const timestamp = Date.now().toString();
     const signature = await hmacSha256Hex(apiKey, merchantCode + timestamp);
     const callbackUrl = `${supabaseUrl.replace(/\/$/, "")}/functions/v1/duitku-callback`;
