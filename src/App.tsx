@@ -633,7 +633,7 @@ const Header = () => {
 const BottomNavigation = () => {
   const { currentPage, navigateTo } = useApp();
 
-  const navItems = [
+  const navItems: { id: string; label: string; icon: any; badge?: number }[] = [
     { id: "home", label: "Home", icon: Home },
     { id: "category", label: "Categories", icon: Grid },
     { id: "profile", label: "Profile", icon: User }
@@ -657,7 +657,7 @@ const BottomNavigation = () => {
             >
               <Icon className="w-5 h-5" />
               <span className="text-[10px] font-medium">{item.label}</span>
-              {item.badge > 0 && (
+              {Boolean(item.badge && item.badge > 0) && (
                 <span className="absolute top-0 right-2 bg-orange-500 text-white text-[9px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
                   {item.badge}
                 </span>
