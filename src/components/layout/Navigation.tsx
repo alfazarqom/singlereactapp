@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 
 import { useApp } from "../../app/context/AppContext";
+import type { NavigationItem } from "../../types/navigation";
 
 export const STANDALONE_PAGES = [
   "product-detail",
@@ -158,7 +159,7 @@ const Header = () => {
 const BottomNavigation = () => {
   const { currentPage, navigateTo } = useApp();
 
-  const navItems: { id: string; label: string; icon: any; badge?: number }[] = [
+  const navItems: NavigationItem[] = [
     { id: "home", label: "Home", icon: Home },
     { id: "category", label: "Categories", icon: Grid },
     { id: "profile", label: "Profile", icon: User }
