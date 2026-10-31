@@ -1,4 +1,4 @@
-export export const MOCK_CATEGORIES = [
+export const MOCK_CATEGORIES = [
   { id: "cat-1", name: "Fashion", slug: "fashion", icon: "Shirt", banner: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=1200" },
   { id: "cat-2", name: "Electronics", slug: "electronics", icon: "Smartphone", banner: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=1200" },
   { id: "cat-3", name: "Beauty", slug: "beauty", icon: "Sparkles", banner: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=1200" },
