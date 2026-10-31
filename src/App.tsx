@@ -495,7 +495,6 @@ const ProductCard = ({ product }) => {
       {/* Product Info: price above, rating and review count at the bottom */}
       <div className="flex flex-1 flex-col space-y-0.5">
         <div className="space-y-0.5">
-          <span className="text-[11px] text-slate-400 font-medium">{product.brand}</span>
           <h3
             onClick={() => navigateTo("product-detail", product)}
             className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer transition-colors"
