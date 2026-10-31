@@ -147,6 +147,7 @@ Deno.serve(withSupabase({ auth: "none" }, async (req, ctx) => {
           "x-duitku-timestamp": timestamp,
           "x-duitku-signature": signature,
         },
+        // Omit expiryPeriod: POP expiry defaults and supported limits vary by payment method.
         body: JSON.stringify({
           paymentAmount: totalAmount,
           merchantOrderId,
