@@ -749,7 +749,7 @@ const BottomActionBar = () => {
 // --- A. HOME PAGE ---
 const HomePage = () => {
   const { navigateTo, setSelectedCategory, products, isProductsLoading, productLoadError } = useApp();
-  const categories = [...new Set(products.map((product) => product.category))].map((name) => ({ name, banner: products.find((product) => product.category === name)?.images[0] ?? '' }));
+  const categories: Array<{ id: string; name: string; banner: string }> = [...new Set<string>(products.map((product: StoreProduct) => product.category))].map((name) => ({ id: name, name, banner: products.find((product: StoreProduct) => product.category === name)?.images[0] ?? "" }));
 
   return (
     <div className="space-y-10 pb-12">
@@ -861,7 +861,7 @@ const HomePage = () => {
 // --- B. CATEGORY & PRODUCT LISTING PAGE ---
 const ProductListingPage = () => {
   const { selectedCategory, setSelectedCategory, navigateTo, products, isProductsLoading, productLoadError } = useApp();
-  const categories = [...new Set(products.map((product) => product.category))];
+  const categories: string[] = [...new Set<string>(products.map((product: StoreProduct) => product.category))];
   const [sortBy, setSortBy] = useState("popular");
   const [priceRange, setPriceRange] = useState(5000000);
 
@@ -1194,7 +1194,7 @@ const ProductDetailPage = () => {
 
 // --- D. WISHLIST PAGE ---
 const WishlistPage = () => {
-  const { wishlist } = useApp();
+  const { wishlist, products } = useApp();
   const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
 
   return (
