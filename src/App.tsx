@@ -493,8 +493,8 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Product Info: outside the media card, without padding */}
-      <div className="flex flex-1 flex-col justify-between space-y-2">
-        <div className="space-y-1">
+      <div className="flex flex-1 flex-col justify-between space-y-1">
+        <div className="space-y-0.5">
           <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
             <span>{product.brand}</span>
             <span className="flex items-center gap-0.5 text-amber-500 font-semibold">
@@ -509,7 +509,7 @@ const ProductCard = ({ product }) => {
           </h3>
         </div>
 
-        <div className="pt-2 space-y-2">
+        <div className="pt-1 space-y-1">
           <div className="flex items-baseline gap-1.5 flex-wrap">
             <span className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
               {formatIDR(product.price)}
