@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { fetchProducts, type StoreProduct } from "./lib/products";
-import { readJsonStorage, isStringArray } from "./lib/storage";
+import { readJsonStorage, isStringArray, isCartArray } from "./lib/storage";
 import {
   ShoppingCart,
   Heart,
@@ -85,7 +85,7 @@ export const AppProvider = ({ children }) => {
   const [toastMessage, setToastMessage] = useState("");
   
   // Storage States
-  const [cart, setCart] = useState(() => readJsonStorage("mystore_cart", [], (value): value is any[] => Array.isArray(value)));
+  const [cart, setCart] = useState(() => readJsonStorage("mystore_cart", [], isCartArray));
   const [wishlist, setWishlist] = useState(() => readJsonStorage("mystore_wishlist", [], isStringArray));
   const [orders, setOrders] = useState([]);
     const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
@@ -96,7 +96,13 @@ export const AppProvider = ({ children }) => {
       .then((items) => {
         if (cancelled) return;
         setProducts(items);
-        setSelectedProduct((current) => current ?? items[0] ?? null);
+        setSelectedProduct((current) => current ? items.find((item) => item.id === current.id) ?? items[0] ?? null : items[0] ?? null);
+        setCart((current) => current.flatMap((entry) => {
+          const product = items.find((item) => item.id === entry.product.id);
+          if (!product || product.stock <= 0) return [];
+          return [{ ...entry, product, quantity: Math.min(entry.quantity, product.stock) }];
+        }));
+        setWishlist((current) => current.filter((id) => items.some((item) => item.id === id)));
         setProductLoadError("");
       })
       .catch((error: unknown) => {
