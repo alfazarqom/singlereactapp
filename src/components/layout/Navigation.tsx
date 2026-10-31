@@ -38,7 +38,7 @@ import {
   Eye
 } from "lucide-react";
 
-import { useApp } from "../../app/context/AppContext";
+import { useApp } from "../../hooks/useApp";
 import type { NavigationItem } from "../../types/navigation";
 
 export const STANDALONE_PAGES = [
